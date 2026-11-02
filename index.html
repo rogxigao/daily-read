@@ -1223,6 +1223,115 @@ const ARTICLES = [
 
 
 /* ---------------------------------------------------------------------------
+   2026-11-03 · 金融市场 / 指数再平衡与被动资金
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-03',
+  date: '2026-11-03',
+  topic: '金融市场',
+  title: 'The Trade That Has to Happen',
+  subtitle: 'When a stock joins an index, the buyers are not convinced. They are required.',
+  level: 'CET-6',
+  body: [
+    { en: `Several times a year, a stock can jump several percent on a day when the company announces nothing at all.`,
+      zh: `一家公司在什么都没宣布的一天里，股价有时会跳涨几个百分点，而这样的日子一年有好几次。` },
+    { en: `No new product, no earnings report, no contract.`,
+      zh: `没有新产品，没有财报，也没有新合同。` },
+    { en: `What changed was a rule, written by a committee most investors have never heard of.`,
+      zh: `变动的是一条规则，而写下这条规则的委员会，大多数投资者从没听说过。` },
+    { en: `That committee decides which companies belong to an {{index}}.`,
+      zh: `这个委员会决定哪些公司属于某个指数。` },
+    { en: `An index is not a judgement about value. It is a list, and a list can be edited.`,
+      zh: `指数不是对价值的判断。它只是一份名单，而名单是可以修改的。` },
+    { en: `Funds that track an index hold whatever the list holds, in the proportions the list gives.`,
+      zh: `跟踪指数的基金，名单上有什么它就持有什么，比例也照名单给的来。` },
+    { en: `Their {{mandate}} leaves no room for an opinion.`,
+      zh: `它们的受托义务里，没有给“看法”留位置。` },
+    { en: `So when a company is added, every fund tracking that index has to buy it, by a deadline published months in advance.`,
+      zh: `于是当一家公司被纳入，每一只跟踪该指数的基金都必须买入，而截止日期提前几个月就公布了。` },
+    { en: `This is the index {{inclusion}} effect, and it is one of the rare cases in finance where a very large future order is announced to the whole world.`,
+      zh: `这就是指数纳入效应。在金融世界里，一笔巨大的未来订单被公开告知全世界，这种情况相当罕见。` },
+    { en: `The size is not trivial.`,
+      zh: `规模并不小。` },
+    { en: `An index with trillions of dollars tracking it will still move billions of dollars for a {{weight}} of a fraction of one percent.`,
+      zh: `一个被数万亿美元跟踪的指数，哪怕权重只有零点几个百分点，也照样能带动几十亿美元的资金。` },
+    { en: `Almost none of those buyers think the stock is cheap.`,
+      zh: `这些买家当中，几乎没有人认为这只股票便宜。` },
+    { en: `They buy because the arithmetic requires it.`,
+      zh: `他们买，是因为算术要求他们买。` },
+    { en: `The market, however, cannot tell a convinced buyer from an obliged one.`,
+      zh: `可是市场分不清谁是真心看好，谁是被迫成交。` },
+    { en: `Price is set at the {{marginal}} — by whoever has to trade at that moment.`,
+      zh: `价格由边际决定，也就是由那一刻不得不成交的人决定。` },
+    { en: `That is the uncomfortable part. A small slice of the market, trading for reasons that have nothing to do with value, can move the price that everyone else uses to measure their wealth.`,
+      zh: `这正是让人不安的地方。市场上的一小部分人，出于与价值毫无关系的理由交易，却能推动所有人用来衡量自身财富的那个价格。` },
+    { fig: 'orderbook' },
+    { en: `Traders noticed this long ago.`,
+      zh: `交易员早就察觉了这一点。` },
+    { en: `Knowing that a large purchase is coming, they can buy first and sell to the funds later — a practice called {{front-running}} the {{rebalance}}.`,
+      zh: `既然知道一大笔买盘要来，他们可以先买，之后再卖给那些基金。这种做法叫抢跑再平衡。` },
+    { en: `The result is a visible pattern. Volume piles into the closing {{auction}} on the day of the change, prices often drift up before inclusion, and partly back afterwards.`,
+      zh: `结果是一种看得见的规律：调整当天的成交量会挤进收盘集合竞价，价格在纳入前往往被推高，之后又回落一部分。` },
+    { en: `Why does the pattern survive, if everyone can see it?`,
+      zh: `既然人人都看得见，这个规律为什么还能活着？` },
+    { en: `Partly because the trade gets crowded and the advantage is competed away, and partly because the funds cannot opt out.`,
+      zh: `一部分原因是这笔交易会变得拥挤，优势被竞争磨掉；另一部分原因是基金没法选择不玩。` },
+    { en: `A tracking fund that refuses to trade drifts away from its benchmark, and drift is the one thing it is not allowed to produce.`,
+      zh: `一只拒绝交易的跟踪基金，会偏离它的基准，而偏离恰恰是它唯一不被允许产生的东西。` },
+    { en: `So the cost is paid quietly, recorded as an {{implementation}} cost inside something called tracking error.`,
+      zh: `于是这笔成本被悄悄付掉了，记在“跟踪误差”名下，算作一种执行成本。` },
+    { en: `The same machinery runs in reverse when a company is deleted: the {{roster}} changes, and the selling happens whether or not anyone wants to sell.`,
+      zh: `同一套机械在剔除时反向运转：名册一变，卖盘就会出现，不管有没有人真的想卖。` },
+    { en: `For a student, the useful lesson is not that index funds are bad.`,
+      zh: `对学生来说，有用的教训并不是“指数基金不好”。` },
+    { en: `It is that an index is a rule, and rules make behaviour {{predictable}}.`,
+      zh: `而是：指数是一条规则，而规则会让行为变得可预测。` },
+    { en: `Once you can see the rule, you can see the {{distortion}} it creates, and you stop mistaking the plumbing for public opinion.`,
+      zh: `一旦你看清了规则，你就能看到它造成的扭曲，也不会再把管道当成民意。` },
+    { note: {
+        en: 'A price is not a vote. Sometimes it is just the sound of someone who has no choice.',
+        zh: '价格不是投票。有时候，它只是某个别无选择的人发出的声音。'
+      } }
+  ],
+  words: {
+    'index': { ipa: '/ˈɪndeks/', cn: 'n. 指数；索引', ex: 'The fund simply copies the index it tracks.', exZh: '这只基金只是照抄它所跟踪的指数。' },
+    'mandate': { ipa: '/ˈmændeɪt/', cn: 'n. 授权；受托职责', ex: 'Its mandate forbids it from picking favourites.', exZh: '它的受托职责不允许它挑自己喜欢的股票。' },
+    'inclusion': { ipa: '/ɪnˈkluːʒn/', cn: 'n. 纳入；包含', ex: 'Index inclusion can move a price without any news.', exZh: '指数纳入能在没有任何消息的情况下推动价格。' },
+    'weight': { ipa: '/weɪt/', cn: 'n. 权重；比重', ex: 'A small weight in a huge index still means real money.', exZh: '在一个巨型指数里，很小的权重也意味着真金白银。' },
+    'marginal': { ipa: '/ˈmɑːdʒɪnl/', cn: 'n. 边际（adj. 边际的，边缘的）', ex: 'The price is set at the marginal, not at the average.', exZh: '价格由边际决定，而不是由平均值决定。' },
+    'front-running': { ipa: '/ˌfrʌnt ˈrʌnɪŋ/', cn: 'n. 抢跑（在已知大单成交之前先行交易）', ex: 'Front-running a known order is legal in many markets.', exZh: '在许多市场里，抢跑一笔已知的订单是合法的。' },
+    'rebalance': { ipa: '/ˌriːˈbæləns/', cn: 'n./v. 再平衡；调整权重', ex: 'The rebalance happens on a single closing auction.', exZh: '这次再平衡集中在一次收盘集合竞价里完成。' },
+    'auction': { ipa: '/ˈɔːkʃn/', cn: 'n. 拍卖；集合竞价', ex: 'Most of the volume traded in the closing auction.', exZh: '大部分成交量发生在收盘集合竞价中。' },
+    'implementation': { ipa: '/ˌɪmplɪmenˈteɪʃn/', cn: 'n. 实施；执行', ex: 'Implementation costs are hidden inside tracking error.', exZh: '执行成本被藏在跟踪误差里面。' },
+    'roster': { ipa: '/ˈrɒstə/', cn: 'n. 名册；成员名单', ex: 'When the roster changes, the flows follow automatically.', exZh: '名册一变，资金流就自动跟着动。' },
+    'predictable': { ipa: '/prɪˈdɪktəbl/', cn: 'adj. 可预测的', ex: 'Rules make behaviour predictable, and predictability has a price.', exZh: '规则让行为变得可预测，而可预测性是有代价的。' },
+    'distortion': { ipa: '/dɪˈstɔːʃn/', cn: 'n. 扭曲；失真', ex: 'Forced buying creates a distortion that others can trade against.', exZh: '被动买入制造出一种扭曲，别人可以反过来利用它交易。' }
+  },
+  quiz: [
+    { q: 'Why must an index fund buy a stock as soon as it is added to the index?',
+      options: ['Because the fund manager believes the stock is undervalued.',
+                'Because the fund is required to hold whatever the index holds, so the purchase is compulsory.',
+                'Because the exchange orders every fund to buy it.'],
+      answer: 1,
+      why: '文章强调基金是“照抄名单”，受托义务不允许它有看法，所以买入是被规则强制的，与是否看好无关。' },
+    { q: 'What does “price is set at the marginal” mean in this passage?',
+      options: ['The price is decided by those who are forced to trade at that moment, not by the average opinion.',
+                'The price equals the average cost of all holders.',
+                'The price is fixed by the index committee.'],
+      answer: 0,
+      why: '原文："Price is set at the marginal — by whoever has to trade at that moment." 即由边际上不得不成交的人定价。' },
+    { q: 'Why does the predictable pattern around inclusion still survive?',
+      options: ['Because index committees keep their decisions secret.',
+                'Because funds cannot choose to skip the trade without deviating from their benchmark, so the flow stays compulsory.',
+                'Because regulators forbid anyone from trading before the change.'],
+      answer: 1,
+      why: '文章说优势被竞争磨掉一部分，但基金不能选择不交易——偏离基准是它唯一不被允许产生的东西，所以强制买盘依旧存在。' }
+  ]
+},
+
+
+
+/* ---------------------------------------------------------------------------
    2026-11-02 · 机器人 / 触觉与柔顺控制
    --------------------------------------------------------------------------- */
 {
