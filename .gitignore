@@ -1,0 +1,5 @@
+# 只把站点本身纳入版本管理
+# .workbuddy 里是项目记忆，outputs 里是英语作业，都不该上传到公开仓库
+*
+!.gitignore
+!index.html

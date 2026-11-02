@@ -1,0 +1,2945 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf9f6">
+<title>Daily Read · 理工科英语每日一读</title>
+<!--
+  ============================================================================
+  Daily Read · 单文件英语阅读站点
+  ----------------------------------------------------------------------------
+  纯前端，无后端、无框架、无外部依赖，双击本文件即可运行。
+  所有学习记录（已读、生词掌握、主题、字号）都存在浏览器 localStorage，
+  换浏览器或清理缓存会丢失，属于预期行为。
+
+  【日常使用】
+  1) 每天在下面的 ARTICLES 数组最前面加一篇新文章（复制一份旧的结构改内容）
+  2) 正文里用 {{单词}} 标记重点词（会自动加粗+下划线，可点击查词）
+  3) 同一个单词必须在 words 里有一条词条，否则点击无内容
+  4) 保存刷新即可，历史归档、单词本会自动收录
+
+  【目录】
+  §0  CSS 变量与主题
+  §1  页面骨架样式
+  §2  阅读区样式
+  §3  单词本 / 归档 / 设置样式
+  §4  底部液态玻璃导航
+  §5  数据区（文章 + 词库）
+  §6  状态与工具函数
+  §7  视图渲染
+  §8  事件绑定
+  ============================================================================
+-->
+<style>
+/* ==========================================================================
+   §0  CSS 变量与主题
+   ========================================================================== */
+:root{
+  --bg:#faf9f6;
+  --surface:#ffffff;
+  --surface-2:#f5f3ed;
+  --ink:#17181a;
+  --ink-2:#4b4d52;
+  --ink-3:#8b8c90;
+  --line:#e7e4db;
+  --line-soft:#f0eee7;
+  --accent:#0d6e66;
+  --accent-ink:#0a5a53;
+  --accent-soft:#e2f0ed;
+  --hover:rgba(20,20,20,.028);
+  --shadow-sm:0 1px 2px rgba(24,20,12,.05);
+  --shadow-md:0 10px 30px -12px rgba(24,20,12,.18);
+  --fs:19px;                 /* 英文正文字号，由设置页控制 */
+  --dock-h:74px;             /* 底部导航高度，正文避让用 */
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  /* 插图配色（SVG 里用 class 引用，深浅色各一套） */
+  --fig-ink:#3c3e42;
+  --fig-line:#ddd8ce;
+  --fig-accent:#0d6e66;
+  --fig-accent-2:#b0662c;
+  --fig-soft:#f1ede4;
+  /* 缓动曲线：进场用 ease-out 系，位移用 Apple 的减速曲线 */
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.32,.42,1);
+}
+[data-theme="dark"]{
+  --bg:#0e0f11;
+  --surface:#17191c;
+  --surface-2:#1e2126;
+  --ink:#eae8e3;
+  --ink-2:#b7b5af;
+  --ink-3:#797872;
+  --line:#2b2e33;
+  --line-soft:#212429;
+  --accent:#5ec8ba;
+  --accent-ink:#7fd9cd;
+  --accent-soft:#153a37;
+  --hover:rgba(255,255,255,.038);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 12px 34px -14px rgba(0,0,0,.7);
+  --fig-ink:#c9c7c2;
+  --fig-line:#33373d;
+  --fig-accent:#5ec8ba;
+  --fig-accent-2:#d9975a;
+  --fig-soft:#1e2126;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:auto;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  transition:background .3s ease,color .3s ease;
+}
+[hidden]{display:none !important;}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;}
+::selection{background:var(--accent-soft);color:var(--accent-ink);}
+
+/* ==========================================================================
+   §1  页面骨架
+   ========================================================================== */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:var(--bg);                 /* 老浏览器回退 */
+  background:color-mix(in srgb,var(--bg) 82%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(14px);
+  backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-inner{
+  max-width:820px;margin:0 auto;
+  height:58px;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+.brand-mark{
+  width:26px;height:26px;border-radius:8px;flex:0 0 auto;
+  background:var(--accent);color:#fff;
+  display:grid;place-items:center;
+  font-family:var(--serif);font-size:15px;font-weight:600;
+  box-shadow:var(--shadow-sm);
+}
+[data-theme="dark"] .brand-mark{color:#08211f;}
+.brand-txt{display:flex;flex-direction:column;line-height:1.15;}
+.brand-txt b{font-size:14.5px;letter-spacing:.01em;}
+.brand-txt i{font-style:normal;font-size:11px;color:var(--ink-3);letter-spacing:.03em;}
+.icon-btn{
+  width:34px;height:34px;border-radius:10px;
+  border:1px solid transparent;background:transparent;
+  display:grid;place-items:center;color:var(--ink-2);
+  transition:background .18s,color .18s,transform .18s;
+}
+.icon-btn:hover{background:var(--hover);color:var(--ink);}
+.icon-btn:active{transform:scale(.94);}
+.icon-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+/* 环境色层：几乎没有存在感，但玻璃要"透"出点什么才像玻璃 */
+.ambient{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(620px 420px at 6% 12%, rgba(13,110,102,.06), transparent 68%),
+    radial-gradient(560px 420px at 98% 64%, rgba(176,102,44,.05), transparent 68%),
+    radial-gradient(760px 480px at 46% 106%, rgba(13,110,102,.07), transparent 66%);
+}
+[data-theme="dark"] .ambient{
+  background:
+    radial-gradient(620px 420px at 6% 12%, rgba(94,200,186,.075), transparent 68%),
+    radial-gradient(560px 420px at 98% 64%, rgba(217,151,90,.05), transparent 68%),
+    radial-gradient(760px 480px at 46% 106%, rgba(94,200,186,.09), transparent 66%);
+}
+
+.wrap{
+  position:relative;z-index:1;
+  max-width:820px;margin:0 auto;
+  padding:0 20px;
+  /* 自动避开底部导航：dock 高度 + 安全区 */
+  padding-bottom:calc(var(--dock-h) + 46px + env(safe-area-inset-bottom,0px));
+}
+/* 横向页面舞台：四页并排放在一条滑轨上，靠 transform 平移 */
+.stage{position:relative;overflow-x:hidden;overflow-x:clip;overflow-y:visible;}
+.view{
+  position:absolute;top:0;left:0;width:100%;
+  /* 这里千万不要加 will-change / backface-visibility：
+     四页都是整页高度，会各自生成一张巨大的合成层，手机上直接卡死 */
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+
+/* ==========================================================================
+   §2  阅读区
+   ========================================================================== */
+.art-head{padding:34px 0 0;}
+.meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.tag{
+  font-size:11.5px;letter-spacing:.02em;
+  padding:3px 9px;border-radius:6px;
+  background:var(--accent-soft);color:var(--accent-ink);
+  font-weight:600;
+}
+.meta time{font-size:12.5px;color:var(--ink-3);letter-spacing:.02em;}
+.art-title{
+  font-family:var(--serif);
+  font-size:31px;line-height:1.24;font-weight:600;
+  letter-spacing:-.012em;margin:0 0 8px;
+}
+.art-sub{
+  font-family:var(--serif);font-style:italic;
+  font-size:15px;color:var(--ink-3);
+  margin:0 0 20px;line-height:1.5;
+}
+.statbar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  padding:11px 0;margin-bottom:4px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3);
+  letter-spacing:.02em;
+}
+.statbar span{display:inline-flex;align-items:center;gap:5px;}
+.statbar .dot{width:3px;height:3px;border-radius:50%;background:var(--ink-3);opacity:.5;}
+.statbar b{color:var(--ink-2);font-weight:600;font-variant-numeric:tabular-nums;}
+
+.toolbar{
+  position:sticky;top:58px;z-index:30;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 0;
+  background:var(--bg);
+}
+/* 工具条下方做一层淡出，避免正文滚动时出现生硬的切边 */
+.toolbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:-16px;height:16px;
+  background:linear-gradient(var(--bg),transparent);
+  pointer-events:none;
+}
+.seg{
+  display:inline-flex;padding:3px;border-radius:10px;
+  background:var(--surface-2);border:1px solid var(--line-soft);
+}
+.seg button{
+  border:0;background:transparent;border-radius:7px;
+  padding:5px 12px;font-size:12.5px;color:var(--ink-3);
+  transition:.18s;
+}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm);font-weight:600;}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 13px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);
+  font-size:12.5px;color:var(--ink-2);
+  transition:.18s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-ink);}
+.btn:active{transform:scale(.98);}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+[data-theme="dark"] .btn.on{color:#08211f;}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+
+/* --- 句子行 --- */
+.reading{padding:8px 0 0;}
+.sent{
+  position:relative;
+  padding:9px 34px 9px 10px;
+  margin:0 -10px 6px;
+  border-radius:10px;
+  transition:background .18s;
+}
+.sent:hover{background:var(--hover);}
+.sent.now{background:var(--accent-soft);}
+.sent .en{
+  font-family:var(--serif);
+  font-size:var(--fs);
+  line-height:1.78;
+  color:var(--ink);
+  letter-spacing:.002em;
+}
+.sent .zh{
+  font-size:14.5px;
+  line-height:1.85;
+  color:var(--ink-3);
+  margin-top:5px;
+  letter-spacing:.01em;
+}
+.reading.only-en .zh{display:none;}
+.reading.only-en .sent{padding-bottom:10px;}
+
+/* 重点词：加粗 + 下划线 */
+.w{
+  font-weight:700;
+  text-decoration:underline;
+  text-decoration-thickness:2px;
+  text-underline-offset:3.5px;
+  text-decoration-color:var(--accent);
+  cursor:pointer;
+  border-radius:3px;
+  transition:background .16s,color .16s,text-decoration-color .16s;
+}
+.w:hover,.w:focus-visible{
+  background:var(--accent-soft);
+  color:var(--accent-ink);
+  outline:none;
+}
+
+/* 单句朗读按钮 */
+.spk{
+  position:absolute;right:2px;top:12px;
+  width:24px;height:24px;padding:0;
+  border:0;background:transparent;border-radius:7px;
+  color:var(--ink-3);opacity:0;
+  display:grid;place-items:center;
+  transition:opacity .18s,background .18s,color .18s;
+}
+.sent:hover .spk,.sent.now .spk{opacity:1;}
+.spk:hover{background:var(--surface-2);color:var(--accent-ink);}
+.spk svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linejoin:round;}
+@media (hover:none){.spk{opacity:.42;}}
+
+/* --- 本篇重点词条带 --- */
+.wordstrip{margin:34px 0 6px;padding-top:18px;border-top:1px solid var(--line);}
+.strip-label{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:700;margin:0 0 12px;
+}
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{
+  border:1px solid var(--line);background:var(--surface);
+  border-radius:7px;padding:4px 10px;
+  font-family:var(--serif);font-size:13.5px;color:var(--ink-2);
+  transition:.16s;
+}
+.chip:hover{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft);}
+
+/* --- 理解题 --- */
+.quiz{margin:36px 0 0;padding-top:22px;border-top:1px solid var(--line);}
+.quiz-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;}
+.quiz-head h3{
+  font-family:var(--serif);font-size:18px;font-weight:600;margin:0;letter-spacing:-.005em;
+}
+.quiz-head span{font-size:12px;color:var(--ink-3);}
+.q{margin:20px 0 0;}
+.q p.qtext{margin:0 0 10px;font-size:14.5px;color:var(--ink);line-height:1.6;}
+.q p.qtext b{color:var(--accent-ink);margin-right:6px;}
+.opts{display:flex;flex-direction:column;gap:6px;}
+.opt{
+  text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:9px;padding:9px 13px;
+  font-size:13.5px;color:var(--ink-2);line-height:1.5;
+  transition:.16s;
+}
+.opt:hover{border-color:var(--ink-3);}
+.opt.right{border-color:#1f9d5a;background:rgba(31,157,90,.09);color:#177a45;}
+.opt.wrong{border-color:#cf5b4a;background:rgba(207,91,74,.08);color:#a8402f;}
+[data-theme="dark"] .opt.right{color:#6fd39a;border-color:#3f8f68;background:rgba(60,150,105,.14);}
+[data-theme="dark"] .opt.wrong{color:#e78d7e;border-color:#8f4f45;background:rgba(160,70,58,.16);}
+.opt .k{font-weight:700;margin-right:7px;opacity:.6;}
+.answer{
+  margin:10px 0 0;padding:10px 13px;border-radius:9px;
+  background:var(--surface-2);border-left:2px solid var(--accent);
+  font-size:13px;color:var(--ink-2);line-height:1.65;
+}
+.answer b{color:var(--accent-ink);}
+
+/* --- 文章插图 --- */
+.fig{
+  margin:34px 0 8px;
+  padding:20px 22px 16px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:var(--surface);
+  box-shadow:var(--shadow-sm);
+}
+.fig-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 16px;}
+.fig-head b{
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-ink);font-weight:700;white-space:nowrap;
+}
+.fig-head span{font-size:11.5px;color:var(--ink-3);}
+.fig svg{display:block;width:100%;height:auto;}
+/* 窄屏时图里文字会缩到看不清，改成可横向滑动，字号保持不变 */
+.fig-scroll{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;}
+.fig-scroll::-webkit-scrollbar{height:6px;}
+.fig-scroll::-webkit-scrollbar-track{background:transparent;}
+.fig-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.fig-cap{
+  margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line-soft);
+  font-size:12.5px;color:var(--ink-3);line-height:1.68;
+}
+.fig-cap b{color:var(--ink-2);font-weight:600;}
+
+/* SVG 内部样式统一走 class，深浅色靠 CSS 变量切换 */
+.fig svg text{font-family:var(--sans);fill:var(--fig-ink);}
+.fig svg .t{font-size:13px;font-weight:600;}
+.fig svg .s{font-size:11.5px;opacity:.72;}
+.fig svg .xs{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;}
+.fig svg .mono{font-family:var(--serif);font-variant-numeric:tabular-nums;font-size:12.5px;}
+.fig svg .b{font-size:15px;font-weight:700;font-family:var(--serif);}
+.fig svg .pad{fill:none;stroke:var(--fig-accent-2);stroke-width:2;stroke-linecap:round;}
+.fig svg .ln{stroke:var(--fig-line);stroke-width:1;fill:none;}
+.fig svg .dash{stroke-dasharray:3 4;}
+.fig svg .acc{fill:var(--fig-accent);}
+.fig svg .acc2{fill:var(--fig-accent-2);}
+.fig svg .accs{fill:var(--fig-accent);opacity:.15;}
+.fig svg .acc2s{fill:var(--fig-accent-2);opacity:.15;}
+.fig svg .box{fill:var(--fig-soft);stroke:var(--fig-line);}
+.fig svg .mk{fill:var(--fig-line);}
+
+/* --- WHY IT MATTERS 说明卡 --- */
+.callout{
+  margin:32px 0;
+  padding:16px 18px 17px;
+  border-radius:13px;
+  background:var(--accent-soft);
+  border:1px solid var(--line);
+  border-color:color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.callout p{margin:0;}
+.callout .cl{
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-ink);font-weight:700;margin-bottom:8px;
+}
+.callout .ce{
+  font-family:var(--serif);font-size:15px;line-height:1.62;color:var(--ink);
+}
+.callout .cz{font-size:12.5px;line-height:1.72;color:var(--ink-2);opacity:.88;margin-top:6px;}
+
+/* --- 上下篇 --- */
+.pager{
+  display:flex;gap:10px;margin:38px 0 0;padding-top:20px;
+  border-top:1px solid var(--line);
+}
+.pager a{
+  flex:1;min-width:0;text-decoration:none;color:inherit;
+  border:1px solid var(--line);border-radius:11px;
+  padding:12px 15px;background:var(--surface);
+  transition:.18s;
+}
+.pager a:hover{border-color:var(--accent);text-decoration:none;}
+.pager .lbl{display:block;font-size:11px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:3px;}
+.pager .tt{display:block;font-size:13.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pager a.next{text-align:right;}
+.pager a.dis{opacity:.4;pointer-events:none;}
+
+/* --- 查词弹窗 --- */
+.tip{
+  position:fixed;left:0;top:0;z-index:120;
+  width:min(320px,calc(100vw - 24px));
+  padding:14px 16px 15px;
+  border-radius:13px;
+  background:var(--surface);            /* 老浏览器回退 */
+  background:color-mix(in srgb,var(--surface) 92%,transparent);
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  backdrop-filter:blur(18px) saturate(180%);
+  border:1px solid var(--line);
+  box-shadow:0 18px 44px -16px rgba(20,18,12,.32),0 2px 8px rgba(20,18,12,.06);
+  animation:tipIn .16s ease both;
+}
+@keyframes tipIn{from{opacity:0;transform:translateY(5px) scale(.985);}to{opacity:1;transform:none;}}
+.tip .tw{
+  font-family:var(--serif);font-size:17px;font-weight:700;
+  letter-spacing:-.01em;margin-bottom:2px;
+}
+.tip .ipa{
+  font-family:"Segoe UI",var(--sans);font-size:12.5px;
+  color:var(--accent-ink);letter-spacing:.02em;margin-bottom:7px;
+}
+.tip .cn{font-size:13.5px;color:var(--ink);line-height:1.55;margin-bottom:10px;}
+.tip .ex{
+  font-family:var(--serif);font-size:13.5px;line-height:1.6;
+  color:var(--ink-2);padding-left:10px;border-left:2px solid var(--line);
+  margin-bottom:4px;
+}
+.tip .exzh{font-size:12.5px;color:var(--ink-3);line-height:1.6;padding-left:12px;}
+
+/* ==========================================================================
+   §3  单词本 / 归档 / 设置
+   ========================================================================== */
+.page-head{padding:36px 0 20px;}
+.page-head h2{
+  font-family:var(--serif);font-size:26px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em;
+}
+.page-head p{margin:0;font-size:13.5px;color:var(--ink-3);}
+
+.wb-bar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:12px 0 16px;border-bottom:1px solid var(--line);
+}
+.sel{
+  appearance:none;border:1px solid var(--line);background:var(--surface);
+  border-radius:9px;padding:6px 30px 6px 12px;
+  font-size:12.5px;color:var(--ink-2);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%238b8c90' stroke-width='1.4' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.wb-count{margin-left:auto;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
+
+.wb-list{margin-top:4px;}
+.wb-row{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 10px;margin:0 -10px;
+  border-bottom:1px solid var(--line-soft);
+  border-radius:9px;
+  transition:background .16s;
+}
+.wb-row:hover{background:var(--hover);}
+.wb-word{
+  flex:0 0 168px;min-width:0;
+  display:flex;flex-direction:column;gap:1px;
+}
+.wb-word i{
+  font-style:normal;font-family:var(--serif);font-size:16px;font-weight:700;
+  letter-spacing:-.01em;color:var(--ink);word-break:break-word;
+}
+.wb-word small{font-size:11.5px;color:var(--accent-ink);opacity:.85;letter-spacing:.01em;}
+.wb-cn{
+  flex:1;min-width:0;font-size:13.5px;color:var(--ink-2);line-height:1.55;
+  transition:filter .18s,opacity .18s;
+}
+.wb-list.hide .wb-cn{filter:blur(5px);opacity:.55;cursor:pointer;user-select:none;}
+.wb-list.hide .wb-row.reveal .wb-cn{filter:none;opacity:1;}
+.wb-date{flex:0 0 auto;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
+.wb-done{
+  flex:0 0 auto;width:24px;height:24px;border-radius:50%;
+  border:1px solid var(--line);background:transparent;
+  display:grid;place-items:center;color:transparent;
+  transition:.16s;
+}
+.wb-done svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.wb-done:hover{border-color:var(--accent);}
+.wb-row.done .wb-done{background:var(--accent);border-color:var(--accent);color:#fff;}
+[data-theme="dark"] .wb-row.done .wb-done{color:#08211f;}
+.wb-row.done .wb-word i{color:var(--ink-3);font-weight:600;}
+.empty{
+  padding:56px 0;text-align:center;color:var(--ink-3);font-size:13.5px;
+}
+
+/* 归档 */
+.hist-list{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+.hist-card{
+  display:block;text-decoration:none;color:inherit;
+  border:1px solid var(--line);border-radius:13px;
+  padding:16px 18px;background:var(--surface);
+  transition:border-color .18s,transform .18s,box-shadow .18s;
+}
+.hist-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.hist-top{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.hist-top time{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
+.hist-card h3{
+  font-family:var(--serif);font-size:16.5px;font-weight:600;margin:0 0 4px;
+  line-height:1.35;letter-spacing:-.005em;
+}
+.hist-card p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.5;}
+.badge-read{
+  margin-left:auto;font-size:11px;color:var(--accent-ink);
+  background:var(--accent-soft);padding:2px 8px;border-radius:5px;font-weight:600;
+}
+
+/* 设置 */
+.set-group{
+  border:1px solid var(--line);border-radius:13px;
+  background:var(--surface);overflow:hidden;margin-bottom:14px;
+}
+.set-row{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 18px;border-bottom:1px solid var(--line-soft);
+}
+.set-row:last-child{border-bottom:0;}
+.set-label{flex:1;min-width:0;}
+.set-label b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:2px;}
+.set-label span{font-size:12px;color:var(--ink-3);line-height:1.45;}
+.set-ctl{flex:0 0 auto;display:flex;gap:6px;align-items:center;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+.stat-cell{padding:18px 16px;text-align:center;border-right:1px solid var(--line-soft);}
+.stat-cell:last-child{border-right:0;}
+.stat-cell b{
+  display:block;font-family:var(--serif);font-size:26px;font-weight:600;
+  color:var(--ink);line-height:1.2;font-variant-numeric:tabular-nums;
+}
+.stat-cell span{font-size:11.5px;color:var(--ink-3);letter-spacing:.03em;}
+.danger{color:#a8402f;border-color:rgba(168,64,47,.35);}
+.danger:hover{background:rgba(168,64,47,.07);border-color:#a8402f;color:#a8402f;}
+[data-theme="dark"] .danger{color:#e78d7e;border-color:rgba(231,141,126,.3);}
+.note{
+  font-size:12px;color:var(--ink-3);line-height:1.65;
+  padding:0 2px 24px;
+}
+
+/* ==========================================================================
+   §4  底部液态玻璃导航（iOS 风格 liquid glass dock）
+   --------------------------------------------------------------------------
+   分层结构（自下而上）：
+     .dock          定位容器：圆角、外阴影、拖拽位移
+     .dock-glass    磨砂层：backdrop-filter 模糊 + 低透明度染色 + 内高光
+     .dock-lens     折射层：SVG feDisplacementMap（Chromium 专有；
+                    其他浏览器会丢弃整条声明，该层自动透明，不影响磨砂兜底）
+     .dock-sheen    镜面层：跟随指针的柔光
+     .dock-rim      边缘渐变描边（遮罩挖空做出 1px 渐变环）
+     .dock-ind      选中项滑块
+     .dock-item     图标 + 文字
+   参考实现：liquid-glass-react 的三通道色散架构；
+   rxing365 WebGL 仓库 README 里"固定形状改用预计算法线图 + SVG 滤镜"的建议。
+   ========================================================================== */
+.dock{
+  position:fixed;left:50%;z-index:80;
+  bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  display:flex;align-items:center;gap:2px;
+  padding:7px 9px;
+  border-radius:999px;
+  transform:translateX(-50%);
+  user-select:none;-webkit-user-select:none;
+  touch-action:manipulation;         /* 允许页面滚动，只禁掉双击缩放 */
+  isolation:isolate;
+  /* 外阴影三层：近处实、远处虚，做出"悬着一片玻璃"的层次 */
+  box-shadow:
+    0 1px 2px rgba(18,20,26,.05),
+    0 12px 28px -10px rgba(18,20,26,.28),
+    0 34px 64px -30px rgba(18,20,26,.40);
+}
+/* 拎起玻璃球时：球加重投影，其余图标自动让位 */
+.dock.balling .dock-ind{
+  transition:none;                      /* 跟手阶段不要缓动 */
+  box-shadow:
+    0 8px 22px -8px rgba(18,20,26,.45),
+    inset 0 1px 0 rgba(255,255,255,.98),
+    inset 0 -1px 2px rgba(255,255,255,.40);
+}
+.dock.balling .dock-item{opacity:.45;}
+.dock.balling .dock-item.on{opacity:1;}
+
+/* ---------- 玻璃本体：不做磨砂，靠折射出效果 ---------- */
+.dock-glass{
+  position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.13) 0%,
+    rgba(255,255,255,.03) 42%,
+    rgba(255,255,255,.09) 100%);                    /* 极淡的上下渐变，交代厚度 */
+  -webkit-backdrop-filter:blur(9px) saturate(150%) brightness(1.04);
+  backdrop-filter:blur(9px) saturate(150%) brightness(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),             /* 顶部 1px 高光 */
+    inset 0 -1px 0 rgba(255,255,255,.26),
+    inset 0 0 0 .5px rgba(255,255,255,.42);
+}
+
+/* 不支持折射的浏览器（Safari / Firefox）退回一层轻磨砂，否则文字会和图标糊在一起 */
+.dock.no-lens .dock-glass{
+  background:rgba(252,252,250,.30);
+  -webkit-backdrop-filter:blur(14px) saturate(180%);
+  backdrop-filter:blur(14px) saturate(180%);
+}
+
+/* ---------- 折射层：Chromium 才有肉眼可见的边缘透镜 ---------- */
+.dock-lens{
+  position:absolute;inset:0;border-radius:inherit;z-index:1;pointer-events:none;
+  backdrop-filter:url(#lgRefract);
+  -webkit-backdrop-filter:url(#lgRefract);
+}
+
+/* ---------- 镜面高光：跟随指针，拖动时最明显 ---------- */
+.dock-sheen{
+  position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(150px 72px at var(--sx,50%) var(--sy,-12%),
+      rgba(255,255,255,.42), rgba(255,255,255,0) 72%),
+    linear-gradient(152deg, rgba(255,255,255,.18), rgba(255,255,255,0) 44%, rgba(255,255,255,.07) 100%);
+  opacity:.8;
+}
+
+/* ---------- 边缘渐变描边：中间薄、两头亮，像玻璃被光擦过 ---------- */
+.dock-rim{
+  position:absolute;inset:0;border-radius:inherit;z-index:3;pointer-events:none;
+  padding:1px;
+  background:linear-gradient(168deg,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,.30) 38%,
+    rgba(255,255,255,.14) 62%,
+    rgba(255,255,255,.75) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite:exclude;
+}
+
+/* ---------- 选中项滑块 ---------- */
+.dock-ind{
+  position:absolute;top:7px;bottom:7px;left:0;width:0;z-index:4;
+  border-radius:999px;
+  background:rgba(226,240,237,.55);
+  -webkit-backdrop-filter:blur(4px) saturate(160%);
+  backdrop-filter:blur(4px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 2px rgba(255,255,255,.35),
+    inset 0 0 12px rgba(255,255,255,.35),
+    0 1px 3px rgba(18,20,26,.06);
+  transition:width .2s ease;
+}
+
+.dock-item{
+  position:relative;z-index:5;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:74px;padding:8px 0 6px;
+  border:0;background:transparent;border-radius:999px;
+  color:var(--ink-3);
+  touch-action:pan-y;                /* 竖向交给页面滚动，横向手势留给拖玻璃球 */
+  -webkit-touch-callout:none;        /* iOS 长按不要弹菜单 */
+  /* 玻璃变薄以后，图标和文字需要一层很淡的光晕才能和下面的正文分开 */
+  filter:drop-shadow(0 0 2px rgba(255,255,255,.92)) drop-shadow(0 0 7px rgba(255,255,255,.5));
+  transition:color .25s ease,transform .22s var(--ease-spring),opacity .2s ease;
+}
+.dock-item svg{
+  width:20px;height:20px;
+  stroke:currentColor;fill:none;
+  stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .34s var(--ease-spring),stroke-width .25s ease;
+}
+.dock-item span{
+  font-size:10.5px;letter-spacing:.02em;
+  transition:font-weight .2s,opacity .2s;
+}
+.dock-item.on{color:var(--accent-ink);}
+.dock-item.on svg{transform:scale(1.08);stroke-width:1.9;}
+.dock-item.on span{font-weight:600;}
+/* 按下的反馈必须在 pointerdown 时就出现 */
+.dock-item.press{transform:scale(.93);}
+
+/* ---------- 深色模式 ---------- */
+[data-theme="dark"] .dock{
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.45),
+    0 14px 34px -12px rgba(0,0,0,.7),
+    0 42px 74px -34px rgba(0,0,0,.9);
+}
+[data-theme="dark"] .dock.no-lens .dock-glass{
+  background:rgba(24,26,31,.34);
+  -webkit-backdrop-filter:blur(14px) saturate(170%);
+  backdrop-filter:blur(14px) saturate(170%);
+}
+[data-theme="dark"] .dock-item{
+  filter:drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 7px rgba(0,0,0,.55));
+}
+[data-theme="dark"] .dock.balling .dock-ind{
+  box-shadow:
+    0 8px 24px -8px rgba(0,0,0,.85),
+    inset 0 1px 0 rgba(255,255,255,.2);
+}
+[data-theme="dark"] .dock-glass{
+  background:rgba(20,22,26,.16);
+  -webkit-backdrop-filter:saturate(120%) brightness(1.10);
+  backdrop-filter:saturate(120%) brightness(1.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -1px 0 rgba(255,255,255,.04),
+    inset 0 0 0 .5px rgba(255,255,255,.07);
+}
+[data-theme="dark"] .dock-rim{
+  background:linear-gradient(168deg,
+    rgba(255,255,255,.34) 0%,
+    rgba(255,255,255,.06) 40%,
+    rgba(255,255,255,.03) 64%,
+    rgba(255,255,255,.16) 100%);
+}
+[data-theme="dark"] .dock-sheen{
+  background:
+    radial-gradient(150px 72px at var(--sx,50%) var(--sy,-12%),
+      rgba(255,255,255,.16), rgba(255,255,255,0) 72%),
+    linear-gradient(152deg, rgba(255,255,255,.05), rgba(255,255,255,0) 46%, rgba(255,255,255,.02) 100%);
+}
+[data-theme="dark"] .dock-ind{
+  background:rgba(94,200,186,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 1px 3px rgba(0,0,0,.3);
+}
+
+/* 不支持 backdrop-filter 的老浏览器：退化成不透明面板 */
+@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+  .dock-glass{background:var(--surface);}
+  [data-theme="dark"] .dock-glass{background:#202328;}
+}
+
+/* 系统开启"降低透明度"时，直接给实心面板 */
+@media (prefers-reduced-transparency:reduce){
+  .dock-glass{
+    background:var(--surface);
+    -webkit-backdrop-filter:none;backdrop-filter:none;
+  }
+  .dock-lens{display:none;}
+  .dock-sheen{opacity:.3;}
+}
+
+/* 触屏设备：SVG 折射滤镜每帧重算，手机上代价太高，直接关掉换成更厚的磨砂 */
+@media (pointer:coarse),(max-width:820px){
+  .dock-lens{display:none;}
+  .dock-glass{
+    background:rgba(252,252,250,.34);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    backdrop-filter:blur(18px) saturate(180%);
+  }
+  .dock-item,
+  [data-theme="dark"] .dock-item{filter:none;}   /* 光环在厚磨砂上不需要，还省一次离屏合成 */
+  [data-theme="dark"] .dock-glass{
+    background:rgba(24,26,31,.42);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    backdrop-filter:blur(18px) saturate(160%);
+  }
+}
+
+@media (max-width:380px){
+  .dock-item{width:64px;}
+}
+
+/* ==========================================================================
+   小屏适配
+   ========================================================================== */
+@media (max-width:640px){
+  .wrap{padding-left:16px;padding-right:16px;}
+  .art-title{font-size:25px;}
+  .art-head{padding-top:24px;}
+  .toolbar{top:58px;}
+  .sent{padding-right:30px;}
+  .sent .en{font-size:calc(var(--fs) - 1px);line-height:1.72;}
+  .wb-word{flex:0 0 118px;}
+  .wb-word i{font-size:15px;}
+  .wb-date{display:none;}
+  .pager{flex-direction:column;}
+  .pager a.next{text-align:left;}
+  .stat-cell b{font-size:22px;}
+  .fig{padding:16px 14px 12px;border-radius:13px;}
+  .fig-scroll > svg{min-width:520px;}
+}
+@media (max-width:400px){
+  .wb-word{flex:0 0 92px;}
+  .wb-cn{font-size:12.5px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 极淡的环境色，给玻璃提供"可以透出来的东西" -->
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- ============================ 顶部栏 ============================ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#" data-go="read">
+      <span class="brand-mark">R</span>
+      <span class="brand-txt"><b>Daily Read</b><i>理工科英语 · 每日一篇</i></span>
+    </a>
+    <div class="set-ctl">
+      <button class="icon-btn" id="btnTheme" title="切换深浅色" aria-label="切换深浅色">
+        <svg viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ 主体视图 ============================ -->
+<main class="wrap">
+  <!-- 四个页面并排在同一条滑轨上，由底部玻璃球的位置实时驱动 -->
+  <div class="stage" id="stage">
+    <section class="view" id="view-read"></section>
+    <section class="view" id="view-words"></section>
+    <section class="view" id="view-history"></section>
+    <section class="view" id="view-settings"></section>
+  </div>
+</main>
+
+<!-- ============================ 底部液态玻璃导航 ============================ -->
+<nav class="dock" id="dock" aria-label="主导航">
+  <!-- 玻璃分四层叠出来：磨砂 → 折射 → 镜面 → 描边 -->
+  <span class="dock-glass" aria-hidden="true"></span>
+  <span class="dock-lens" id="dockLens" aria-hidden="true"></span>
+  <span class="dock-sheen" id="dockSheen" aria-hidden="true"></span>
+  <span class="dock-rim" aria-hidden="true"></span>
+  <span class="dock-ind" id="dockInd" aria-hidden="true"></span>
+
+  <button class="dock-item on" data-view="read" aria-current="page">
+    <svg viewBox="0 0 24 24"><path d="M12 6.5C10.6 5.2 8.6 4.6 6 4.6H3.5v13H6c2.6 0 4.6.6 6 1.9 1.4-1.3 3.4-1.9 6-1.9h2.5v-13H18c-2.6 0-4.6.6-6 1.9Z"/><path d="M12 6.5v13"/></svg>
+    <span>每日阅读</span>
+  </button>
+
+  <button class="dock-item" data-view="words">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.6"/><path d="M7.5 9.2h6.2M7.5 12.6h9M7.5 16h4.4"/></svg>
+    <span>单词本</span>
+  </button>
+
+  <button class="dock-item" data-view="history">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.6V12l3 1.9"/></svg>
+    <span>历史</span>
+  </button>
+
+  <button class="dock-item" data-view="settings">
+    <svg viewBox="0 0 24 24"><path d="M4 8.2h16M4 15.8h16"/><circle cx="9.2" cy="8.2" r="2.1"/><circle cx="14.8" cy="15.8" r="2.1"/></svg>
+    <span>设置</span>
+  </button>
+</nav>
+
+<!-- ============================ 查词弹窗 ============================ -->
+<div class="tip" id="tip" role="dialog" aria-live="polite" hidden></div>
+
+<script>
+/* ============================================================================
+   §5  数据区 —— 想换文章只改这里
+   ----------------------------------------------------------------------------
+   字段说明：
+   id      唯一标识，建议用日期
+   date    发布日 YYYY-MM-DD（历史归档、单词本按天筛选都用它）
+   topic   领域标签，显示在标题上方
+   title   英文标题
+   subtitle 英文副标题（可留空）
+   level   难度标注
+   body    [{en, zh}] 逐句数组，en 里用 {{word}} 标记重点词
+   words   { 重点词: {ipa, cn, ex, exZh} }
+   quiz    [{q, options:[...], answer:索引, why:解析}]
+   ========================================================================== */
+
+const CONFIG = {
+  wordsPerMinute: 52,   // 估算阅读时长的速度（含看中文翻译），觉得偏慢可改成 60
+};
+
+/* ----------------------------------------------------------------------------
+   FIGURES —— 文章配图库
+   ----------------------------------------------------------------------------
+   正文里用 { fig: 'xxx' } 引用，会插到对应句子之间。
+   所有颜色都走 CSS 变量（--fig-*），深浅色自动切换；
+   viewBox 固定为 640 宽，容器宽度变化时等比缩放。
+   ---------------------------------------------------------------------------- */
+const FIGURES = {
+
+
+  /* ⑤ 先进封装剖面 */
+  package: {
+    head: 'Figure 5',
+    note: 'a cross section of one AI accelerator',
+    svg: `<svg viewBox="0 0 640 260" role="img" aria-label="Cross section of an advanced package">
+      <defs>
+        <marker id="fea" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="mk" d="M0 0 L10 5 L0 10 Z"/>
+        </marker>
+      </defs>
+
+      <rect class="box" x="40" y="196" width="520" height="14" rx="3"/>
+      <rect class="accs" x="40" y="178" width="520" height="14" rx="3"/>
+
+      <rect class="acc2s" x="60" y="108" width="76" height="16" rx="2"/>
+      <rect class="acc2s" x="60" y="126" width="76" height="16" rx="2"/>
+      <rect class="acc2s" x="60" y="144" width="76" height="16" rx="2"/>
+      <rect class="acc2s" x="60" y="162" width="76" height="16" rx="2"/>
+
+      <rect class="acc2s" x="504" y="108" width="76" height="16" rx="2"/>
+      <rect class="acc2s" x="504" y="126" width="76" height="16" rx="2"/>
+      <rect class="acc2s" x="504" y="144" width="76" height="16" rx="2"/>
+      <rect class="acc2s" x="504" y="162" width="76" height="16" rx="2"/>
+
+      <rect class="accs" x="230" y="122" width="180" height="56" rx="4"/>
+      <text class="s" x="320" y="155" text-anchor="middle">logic die</text>
+
+      <line class="ln" x1="144" y1="140" x2="222" y2="140" marker-end="url(#fea)"/>
+      <line class="ln" x1="496" y1="140" x2="418" y2="140" marker-end="url(#fea)"/>
+
+      <rect class="acc2s" x="40" y="226" width="10" height="10" rx="2"/>
+      <text class="s" x="58" y="235">HBM stack</text>
+      <rect class="accs" x="176" y="226" width="10" height="10" rx="2"/>
+      <text class="s" x="194" y="235">interposer</text>
+      <rect class="box" x="306" y="226" width="10" height="10" rx="2"/>
+      <text class="s" x="324" y="235">substrate</text>
+    </svg>`,
+    caption: '<b>Everything happens in the middle.</b> The logic die no longer holds the memory; the memory sits beside it, stacked, and the interposer is the road between them. The shorter that road, the less energy each bit costs.'
+  },
+
+  /* ⑥ 单碱基编辑 */
+  baseedit: {
+    head: 'Figure 6',
+    note: 'one letter, one strand',
+    svg: `<svg viewBox="0 0 640 190" role="img" aria-label="A single base pair is converted">
+      <defs>
+        <marker id="fba" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="mk" d="M0 0 L10 5 L0 10 Z"/>
+        </marker>
+      </defs>
+
+      <text class="xs" x="158" y="44" text-anchor="middle">before</text>
+      <text class="xs" x="452" y="44" text-anchor="middle">after</text>
+
+      <rect class="accs" x="143" y="66" width="30" height="62" rx="4"/>
+
+      <line class="ln dash" x1="90"  y1="96" x2="90"  y2="114"/>
+      <line class="ln dash" x1="124" y1="96" x2="124" y2="114"/>
+      <line class="ln dash" x1="158" y1="96" x2="158" y2="114"/>
+      <line class="ln dash" x1="192" y1="96" x2="192" y2="114"/>
+      <line class="ln dash" x1="226" y1="96" x2="226" y2="114"/>
+
+      <text class="b" x="90"  y="88" text-anchor="middle">A</text>
+      <text class="b" x="124" y="88" text-anchor="middle">T</text>
+      <text class="b acc" x="158" y="88" text-anchor="middle">C</text>
+      <text class="b" x="192" y="88" text-anchor="middle">G</text>
+      <text class="b" x="226" y="88" text-anchor="middle">A</text>
+
+      <text class="b" x="90"  y="128" text-anchor="middle">T</text>
+      <text class="b" x="124" y="128" text-anchor="middle">A</text>
+      <text class="b acc" x="158" y="128" text-anchor="middle">G</text>
+      <text class="b" x="192" y="128" text-anchor="middle">C</text>
+      <text class="b" x="226" y="128" text-anchor="middle">T</text>
+
+      <line class="ln" x1="262" y1="100" x2="344" y2="100" marker-end="url(#fba)"/>
+      <text class="s" x="303" y="88" text-anchor="middle">deaminate</text>
+
+      <rect class="accs" x="437" y="66" width="30" height="62" rx="4"/>
+
+      <line class="ln dash" x1="384" y1="96" x2="384" y2="114"/>
+      <line class="ln dash" x1="418" y1="96" x2="418" y2="114"/>
+      <line class="ln dash" x1="452" y1="96" x2="452" y2="114"/>
+      <line class="ln dash" x1="486" y1="96" x2="486" y2="114"/>
+      <line class="ln dash" x1="520" y1="96" x2="520" y2="114"/>
+
+      <text class="b" x="384" y="88" text-anchor="middle">A</text>
+      <text class="b" x="418" y="88" text-anchor="middle">T</text>
+      <text class="b acc" x="452" y="88" text-anchor="middle">T</text>
+      <text class="b" x="486" y="88" text-anchor="middle">G</text>
+      <text class="b" x="520" y="88" text-anchor="middle">A</text>
+
+      <text class="b" x="384" y="128" text-anchor="middle">T</text>
+      <text class="b" x="418" y="128" text-anchor="middle">A</text>
+      <text class="b acc" x="452" y="128" text-anchor="middle">A</text>
+      <text class="b" x="486" y="128" text-anchor="middle">C</text>
+      <text class="b" x="520" y="128" text-anchor="middle">T</text>
+
+      <text class="s" x="320" y="168" text-anchor="middle">The helix is nicked, never cut in two.</text>
+    </svg>`,
+    caption: '<b>C becomes T; G becomes A.</b> Because the strands are never cut through, the cell repairs the site with its ordinary machinery instead of the error-prone emergency pathway.'
+  },
+
+  /* ⑦ 逻辑量子比特 */
+  logical: {
+    head: 'Figure 7',
+    note: 'error correction, drawn to scale of meaning',
+    svg: `<svg viewBox="0 0 640 240" role="img" aria-label="Many physical qubits encode one logical qubit">
+      <defs>
+        <marker id="fca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="mk" d="M0 0 L10 5 L0 10 Z"/>
+        </marker>
+      </defs>
+
+      <rect class="ln dash" x="50" y="66" width="180" height="120" rx="14"/>
+
+      <circle class="accs" cx="95"  cy="96"  r="12"/>
+      <circle class="accs" cx="140" cy="96"  r="12"/>
+      <circle class="accs" cx="185" cy="96"  r="12"/>
+      <circle class="accs" cx="95"  cy="126" r="12"/>
+      <circle class="accs" cx="140" cy="126" r="12"/>
+      <circle class="accs" cx="185" cy="126" r="12"/>
+      <circle class="accs" cx="95"  cy="156" r="12"/>
+      <circle class="accs" cx="140" cy="156" r="12"/>
+      <circle class="accs" cx="185" cy="156" r="12"/>
+
+      <text class="xs" x="140" y="54" text-anchor="middle">physical</text>
+      <text class="s" x="140" y="208" text-anchor="middle">9 noisy qubits</text>
+
+      <line class="ln" x1="252" y1="126" x2="366" y2="126" marker-end="url(#fca)"/>
+      <text class="s" x="309" y="114" text-anchor="middle">encode</text>
+
+      <circle class="box" cx="470" cy="126" r="40"/>
+      <circle class="accs" cx="470" cy="126" r="26"/>
+
+      <text class="xs" x="470" y="54" text-anchor="middle">logical</text>
+      <text class="s" x="470" y="208" text-anchor="middle">1 reliable qubit</text>
+    </svg>`,
+    caption: '<b>The number to watch is the ratio.</b> A logical qubit is only worth building when it is more reliable than the physical qubits it is made of — and when that gap widens as the code grows.'
+  },
+
+  /* ⑧ 刚性 vs 柔顺抓取 */
+  grasp: {
+    head: 'Figure 8',
+    note: 'two ways to hold the same object',
+    svg: `<svg viewBox="0 0 640 230" role="img" aria-label="Rigid versus compliant grasp">
+      <text class="xs" x="160" y="40" text-anchor="middle">rigid jaw</text>
+      <text class="xs" x="490" y="40" text-anchor="middle">compliant pad</text>
+
+      <circle class="box" cx="160" cy="120" r="38"/>
+      <rect class="accs" x="98"  y="100" width="24" height="40" rx="3"/>
+      <rect class="accs" x="198" y="100" width="24" height="40" rx="3"/>
+      <path class="ln" d="M160 96 l-9 13 h17 l-11 15" stroke-width="1.4"/>
+      <text class="s" x="160" y="192" text-anchor="middle">the gripper wins</text>
+
+      <circle class="box" cx="490" cy="120" r="38"/>
+      <rect class="accs" x="424" y="100" width="20" height="40" rx="3"/>
+      <rect class="accs" x="536" y="100" width="20" height="40" rx="3"/>
+      <path class="pad" d="M444 100 q16 20 0 40"/>
+      <path class="pad" d="M536 100 q-16 20 0 40"/>
+      <text class="s" x="490" y="192" text-anchor="middle">the pad gives way</text>
+    </svg>`,
+    caption: '<b>Compliance is a design decision, not a bug.</b> A jaw that cannot deform has to know the object exactly. A pad that deforms only has to know roughly — and the physics finishes the job.'
+  },
+
+  /* ① 三种精度下的模型体积 */
+  precision: {
+    head: 'Figure 1',
+    note: 'the same weights, three storage formats',
+    svg: `<svg viewBox="0 0 640 210" role="img" aria-label="Model size at three precisions">
+      <line class="ln" x1="150" y1="26" x2="150" y2="176"/>
+      <line class="ln dash" x1="490" y1="26" x2="490" y2="176"/>
+      <text class="xs" x="490" y="16" text-anchor="middle">100%</text>
+
+      <text class="t" x="136" y="58" text-anchor="end">FP16</text>
+      <rect class="accs" x="150" y="40" width="340" height="26" rx="7"/>
+      <rect class="ln" x="150" y="40" width="340" height="26" rx="7"/>
+      <text class="mono" x="506" y="58">14 GB</text>
+
+      <text class="t" x="136" y="108" text-anchor="end">INT8</text>
+      <rect class="accs" x="150" y="90" width="170" height="26" rx="7"/>
+      <rect class="ln" x="150" y="90" width="170" height="26" rx="7"/>
+      <text class="mono" x="336" y="108">7 GB</text>
+
+      <text class="t" x="136" y="158" text-anchor="end">INT4</text>
+      <rect class="accs" x="150" y="140" width="85" height="26" rx="7"/>
+      <rect class="ln" x="150" y="140" width="85" height="26" rx="7"/>
+      <text class="mono" x="251" y="158">3.5 GB</text>
+
+      <text class="s" x="150" y="196">A 7-billion-parameter model, measured by memory footprint.</text>
+    </svg>`,
+    caption: '<b>What quantization actually buys.</b> Halving the bits halves the file: 16-bit weights cost 2 bytes each, 8-bit cost one, 4-bit cost half of one. The bars are the same model every time.'
+  },
+
+  /* ② 端侧 / 云端 分流 */
+  route: {
+    head: 'Figure 2',
+    note: 'where each request is handled',
+    svg: `<svg viewBox="0 0 640 240" role="img" aria-label="On-device and cloud routing">
+      <defs>
+        <marker id="fbA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="mk" d="M0 0 L10 5 L0 10 Z"/>
+        </marker>
+      </defs>
+
+      <rect class="box" x="24" y="38" width="196" height="152" rx="14"/>
+      <text class="xs" x="42" y="64">on device</text>
+      <text class="t" x="42" y="90">small model</text>
+      <text class="s" x="42" y="118">· routine requests</text>
+      <text class="s" x="42" y="140">· private data</text>
+      <text class="s" x="42" y="162">· anything urgent</text>
+
+      <line class="ln" x1="228" y1="114" x2="280" y2="114" marker-end="url(#fbA)"/>
+      <path class="ln" d="M320 88 L350 114 L320 140 L290 114 Z"/>
+
+      <text class="s" x="320" y="160" text-anchor="middle">exceeds</text>
+      <text class="s" x="320" y="176" text-anchor="middle">threshold?</text>
+
+      <line class="ln" x1="358" y1="114" x2="408" y2="114" marker-end="url(#fbA)"/>
+
+      <rect class="box" x="420" y="66" width="196" height="96" rx="14"/>
+      <text class="xs" x="438" y="92">in the cloud</text>
+      <text class="t" x="438" y="118">large model</text>
+      <text class="s" x="438" y="144">· only when needed</text>
+
+      <text class="s" x="320" y="212" text-anchor="middle">The phone decides what deserves to be sent away.</text>
+    </svg>`,
+    caption: '<b>A division of labour, not a replacement.</b> The local model answers most requests instantly and keeps the data on the device; the cloud model is called only for the hard cases.'
+  },
+
+  /* ③ 订单簿盘口 */
+  orderbook: {
+    head: 'Figure 3',
+    note: 'one moment in the order book',
+    svg: `<svg viewBox="0 0 640 340" role="img" aria-label="Order book ladder">
+      <text class="xs" x="32" y="18">bid size</text>
+      <text class="xs" x="320" y="18" text-anchor="middle">price</text>
+      <text class="xs" x="608" y="18" text-anchor="end">ask size</text>
+
+      <rect class="acc2s" x="348" y="36" width="180" height="20" rx="5"/>
+      <rect class="acc2s" x="348" y="68" width="130" height="20" rx="5"/>
+      <rect class="acc2s" x="348" y="100" width="96" height="20" rx="5"/>
+      <rect class="acc2s" x="348" y="132" width="62" height="20" rx="5"/>
+      <text class="mono" x="320" y="51" text-anchor="middle">101.06</text>
+      <text class="mono" x="320" y="83" text-anchor="middle">101.04</text>
+      <text class="mono" x="320" y="115" text-anchor="middle">101.02</text>
+      <text class="mono" x="320" y="147" text-anchor="middle">101.00</text>
+      <text class="mono" x="608" y="51" text-anchor="end">1.2k</text>
+      <text class="mono" x="608" y="83" text-anchor="end">860</text>
+      <text class="mono" x="608" y="115" text-anchor="end">640</text>
+      <text class="mono" x="608" y="147" text-anchor="end">410</text>
+
+      <rect class="accs" x="20" y="158" width="600" height="34" rx="7"/>
+      <text class="s" x="320" y="180" text-anchor="middle">spread 0.02 · the gap market makers live on</text>
+
+      <rect class="accs" x="112" y="196" width="180" height="20" rx="5"/>
+      <rect class="accs" x="182" y="228" width="110" height="20" rx="5"/>
+      <rect class="accs" x="212" y="260" width="80" height="20" rx="5"/>
+      <rect class="accs" x="230" y="292" width="62" height="20" rx="5"/>
+      <text class="mono" x="320" y="211" text-anchor="middle">100.98</text>
+      <text class="mono" x="320" y="243" text-anchor="middle">100.96</text>
+      <text class="mono" x="320" y="275" text-anchor="middle">100.94</text>
+      <text class="mono" x="320" y="307" text-anchor="middle">100.92</text>
+      <text class="mono" x="32" y="211">520</text>
+      <text class="mono" x="32" y="243">730</text>
+      <text class="mono" x="32" y="275">1.1k</text>
+      <text class="mono" x="32" y="307">1.5k</text>
+    </svg>`,
+    caption: '<b>Read it as a queue, not a chart.</b> Bar length is resting size, not volume traded. The best bid and the best ask never meet — the distance between them is the spread, and it is the price of immediacy.'
+  },
+
+  /* ④ 仿真 → 现实 */
+  simreal: {
+    head: 'Figure 4',
+    note: 'the training loop and its cost',
+    svg: `<svg viewBox="0 0 640 250" role="img" aria-label="Simulation to reality loop">
+      <defs>
+        <marker id="fdA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="mk" d="M0 0 L10 5 L0 10 Z"/>
+        </marker>
+      </defs>
+
+      <rect class="box" x="20" y="38" width="228" height="164" rx="14"/>
+      <text class="xs" x="38" y="64">simulation</text>
+      <text class="t" x="38" y="90">10,000 copies</text>
+      <text class="s" x="38" y="116">random mass, friction, delay</text>
+      <text class="s" x="38" y="138">motors that fail at random</text>
+      <text class="s" x="38" y="160">reward = stay upright</text>
+
+      <rect class="box" x="392" y="38" width="228" height="164" rx="14"/>
+      <text class="xs" x="410" y="64">real robot</text>
+      <text class="t" x="410" y="90">one body, one world</text>
+      <text class="s" x="410" y="116">unmodelled contact</text>
+      <text class="s" x="410" y="138">worn tyres, hot motors</text>
+      <text class="s" x="410" y="160">the policy must survive</text>
+
+      <line class="ln" x1="256" y1="86" x2="384" y2="86" marker-end="url(#fdA)"/>
+      <text class="s" x="320" y="76" text-anchor="middle">policy</text>
+
+      <line class="ln" x1="384" y1="152" x2="256" y2="152" marker-end="url(#fdA)"/>
+      <text class="s" x="320" y="170" text-anchor="middle">failures</text>
+
+      <text class="xs" x="320" y="118" text-anchor="middle">reality gap</text>
+    </svg>`,
+    caption: '<b>The loop is the method.</b> Whatever breaks in the real world is fed back as a new randomisation, so the next policy has already seen that failure in simulation.'
+  }
+
+};
+
+const ARTICLES = [
+
+
+/* ---------------------------------------------------------------------------
+   2026-11-02 · 机器人 / 触觉与柔顺控制
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-02',
+  date: '2026-11-02',
+  topic: '机器人',
+  title: 'The Hardest Part of a Robot Is Its Hand',
+  subtitle: 'Legs solved balance with physics. Fingers have to solve contact.',
+  level: 'CET-6',
+  body: [
+    { en: `A robot that can walk across a room is now almost ordinary. A robot that can pick up a key from a table is not.`,
+      zh: `一台能走过房间的机器人如今几乎算平常，一台能从桌上捡起一把钥匙的机器人却不算。` },
+    { en: `The gap is not about strength or speed. It is about contact.`,
+      zh: `差距不在力量或速度，而在接触。` },
+    { en: `A walking robot deals with a handful of contact points, and it can plan them in advance.`,
+      zh: `行走机器人只需处理少数几个接触点，而且可以提前规划。` },
+    { en: `A hand deals with dozens of them, appearing and disappearing hundreds of times a second, and most of them are invisible to the robot.`,
+      zh: `一只手要处理几十个接触点，它们每秒出现和消失上百次，而其中大部分对机器人来说是不可见的。` },
+    { en: `Humans solve this with skin. A fingertip carries thousands of {{mechanoreceptors}} that report pressure, vibration and {{shear}} — the sideways force that tells you an object is about to slip.`,
+      zh: `人类靠皮肤解决这个问题。一个指尖上有数千个机械感受器，报告压力、振动和剪切力——正是那种横向的力告诉你物体即将滑脱。` },
+    { en: `No robot hand comes anywhere close to that {{density}}.`,
+      zh: `没有哪只机器手接近这种密度。` },
+    { en: `Building one is hard for a reason that is rarely stated: sensors and {{actuators}} compete for the same space.`,
+      zh: `造出这样一只手很难，原因很少被说明：传感器和执行器在争同一块空间。` },
+    { en: `Every millimetre given to a tactile array is a millimetre taken from a motor, a tendon, or the structure that holds them.`,
+      zh: `给触觉阵列的每一毫米，都是从电机、腱绳或固定它们的结构那里拿走的。` },
+    { en: `The usual compromise is to {{underactuate}}: fewer motors than joints, with the fingers coupled mechanically so that one motor drives several.`,
+      zh: `常见的折中是"欠驱动"：电机数量少于关节数量，让手指在机械上耦合，用一个电机驱动好几个关节。` },
+    { en: `This is how most prosthetic hands work, and it is why they can grip a cup but not turn a key.`,
+      zh: `大多数假手就是这么做的，这也是它们能握住杯子、却拧不动钥匙的原因。` },
+    { en: `The control problem is equally awkward.`,
+      zh: `控制问题同样棘手。` },
+    { en: `Grasping is not a {{trajectory}} to be followed; it is a negotiation with an object whose weight, friction and stiffness are unknown.`,
+      zh: `抓取不是一条要跟随的轨迹，而是一场与物体的谈判——而物体的重量、摩擦和刚度都是未知的。` },
+    { en: `A controller that is too stiff crushes the object. One that is too soft drops it.`,
+      zh: `控制得太硬会捏碎物体，太软则会掉。` },
+    { en: `The practical answer is {{compliance}}: build the hand so that it yields slightly, and let the mechanics absorb the uncertainty that the software cannot model.`,
+      zh: `实用的答案是"柔顺"：把手造得能微微让步，让机械结构去吸收软件无法建模的不确定性。` },
+    { fig: 'grasp' },
+    { en: `This is a different philosophy from the one that built most industrial robots, which are deliberately {{rigid}} and carefully kept away from anything they might touch.`,
+      zh: `这与造出大多数工业机器人的那套理念不同——那些机器人被刻意做得很刚硬，并被小心地与任何可能碰到的东西隔开。` },
+    { en: `The new generation is designed to touch things, which means it must be able to be wrong safely.`,
+      zh: `新一代机器人被设计成要去接触物体，这意味着它必须能够安全地犯错。` },
+    { en: `Learning has helped, but it has not solved it.`,
+      zh: `学习帮上了忙，但并没有解决它。` },
+    { en: `A policy trained in simulation can master one specific grasp in one specific simulator, and then fail on a real hand whose tendons stretch by half a millimetre.`,
+      zh: `在仿真中训练出来的策略，可以在特定仿真器里精通某一种特定抓取，然后在真实的手上失败——只因为那双手的腱绳会伸长半毫米。` },
+    { en: `Tactile {{feedback}} closes part of that gap, because it lets the controller react to what is actually happening rather than to what was predicted.`,
+      zh: `触觉反馈弥合了其中一部分差距，因为它让控制器对实际发生的事做出反应，而不是对预测做出反应。` },
+    { en: `But it also raises the bar: a control loop that reacts to contact must run at hundreds of hertz, which rules out most of the heavy models now in fashion.`,
+      zh: `但它也抬高了门槛：要对接触做出反应的控制回路必须以数百赫兹运行，这就排除了当下流行的多数大模型。` },
+    { en: `So the field is moving in two directions at once — richer sensing, and much lighter computation.`,
+      zh: `于是这个领域同时在往两个方向走：更丰富的感知，和轻得多的计算。` },
+    { en: `For anyone building robots, the lesson is that the interesting {{constraints}} are mechanical before they are algorithmic.`,
+      zh: `对造机器人的人来说，教训是：有意思的约束在成为算法问题之前，先是机械问题。` },
+    { en: `You can always add another layer of software. You cannot add another millimetre.`,
+      zh: `你总能再加一层软件，却没法再加一毫米。` },
+    { en: `That is why hands are the bottleneck, and why they will stay interesting for a long time.`,
+      zh: `这就是为什么手是瓶颈，也是为什么它会长期是个有意思的问题。` },
+    { note: {
+        en: 'A grip that deforms is not a worse grip. It is a grip that can be wrong by a little and still work.',
+        zh: '会变形的抓取不是更差的抓取。它是那种"可以错一点点、但依然能用"的抓取。'
+      } }
+  ],
+  words: {
+    'mechanoreceptors': { ipa: '/ˌmekənəʊrɪˈseptəz/', cn: 'n. 机械感受器', ex: 'Mechanoreceptors in the skin report pressure and vibration.', exZh: '皮肤里的机械感受器负责报告压力和振动。' },
+    'shear': { ipa: '/ʃɪə/', cn: 'n. 剪切力；切变', ex: 'Shear tells your fingers that an object is about to slip.', exZh: '剪切力告诉你的手指：物体即将滑脱。' },
+    'density': { ipa: '/ˈdensəti/', cn: 'n. 密度', ex: 'No robot hand comes close to the density of human skin.', exZh: '没有哪只机器手接近人类皮肤的密度。' },
+    'actuators': { ipa: '/ˈæktʃueɪtəz/', cn: 'n. 执行器；驱动器（actuator 的复数）', ex: 'Sensors and actuators compete for the same volume.', exZh: '传感器和执行器在争夺同样的体积。' },
+    'underactuate': { ipa: '/ˌʌndərˈæktʃueɪt/', cn: 'v. 欠驱动（执行器数量少于自由度）', ex: 'Most prosthetic hands underactuate the fingers to save space.', exZh: '大多数假手为了节省空间而对指头采用欠驱动。' },
+    'trajectory': { ipa: '/trəˈdʒektəri/', cn: 'n. 轨迹', ex: 'A grasp is not a trajectory to be followed.', exZh: '抓取不是一条要跟随的轨迹。' },
+    'compliance': { ipa: '/kəmˈplaɪəns/', cn: 'n. 柔顺性；顺应性', ex: 'Compliance lets the hand absorb what the controller cannot model.', exZh: '柔顺性让手去吸收控制器无法建模的那部分。' },
+    'rigid': { ipa: '/ˈrɪdʒɪd/', cn: 'adj. 刚性的；僵硬的', ex: 'Industrial robots are deliberately rigid and kept away from people.', exZh: '工业机器人被刻意做得很刚硬，并与人员保持距离。' },
+    'feedback': { ipa: '/ˈfiːdbæk/', cn: 'n. 反馈', ex: 'Tactile feedback lets the controller react to what is actually happening.', exZh: '触觉反馈让控制器对实际发生的情况做出反应。' },
+    'constraints': { ipa: '/kənˈstreɪnts/', cn: 'n. 约束；限制（constraint 的复数）', ex: 'The interesting constraints are mechanical before they are algorithmic.', exZh: '有意思的约束在成为算法问题之前，先是机械问题。' }
+  },
+  quiz: [
+    { q: 'Why is a hand harder to build than a leg, according to the passage?',
+      options: ['Because a hand must be much stronger.',
+                'Because a hand handles many contact points that change hundreds of times a second, most of them unobserved.',
+                'Because hands require more expensive materials.'],
+      answer: 1,
+      why: '文中说腿只要处理少数几个可以提前规划的接触点，而手要处理几十个每秒变化上百次、且大多不可见的接触点。' },
+    { q: 'What does “underactuate” mean here?',
+      options: ['Using fewer motors than joints, with fingers coupled mechanically.',
+                'Using more motors than joints.',
+                'Using no motors at all.'],
+      answer: 0,
+      why: '原文："fewer motors than joints, with the fingers coupled mechanically so that one motor drives several."' },
+    { q: 'The author’s point about constraints is that:',
+      options: ['Software is more important than hardware.',
+                'You can always add another layer of software, but you cannot add another millimetre.',
+                'Mechanical engineers are more talented than software engineers.'],
+      answer: 1,
+      why: '文章结尾原话："You can always add another layer of software. You cannot add another millimetre."' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
+   2026-11-01 · 前沿科研 / 量子纠错
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-01',
+  date: '2026-11-01',
+  topic: '前沿科研',
+  title: 'Making Error the Unit of Measurement',
+  subtitle: 'A quantum computer is judged not by how many qubits it has, but by how few mistakes it makes.',
+  level: 'CET-6',
+  body: [
+    { en: `When a quantum computer is announced, the number that gets quoted is almost always the same: the number of qubits.`,
+      zh: `每当一台量子计算机被发布，被引用的数字几乎总是同一个：量子比特的数量。` },
+    { en: `That number is close to meaningless on its own, and the reason is error.`,
+      zh: `单独看，这个数字近乎没有意义，原因就是误差。` },
+    { en: `A qubit is not a clean two-state switch. It is a small physical system that {{leaks}}, drifts, and interacts with everything around it.`,
+      zh: `量子比特不是干净的二态开关，而是一个会泄漏、会漂移、并和周围一切相互作用的微小物理系统。` },
+    { en: `Left alone, a good qubit holds its state for perhaps a few hundred microseconds before the information is gone.`,
+      zh: `不加干预的话，一个好的量子比特大约只能维持几百微秒，信息就消失了。` },
+    { en: `An algorithm that needs thousands of operations will therefore fail long before it finishes.`,
+      zh: `因此，一个需要上千次操作的算法，会在完成之前很早就失败。` },
+    { en: `The obvious fix is to make better qubits, and that work continues. But there is a limit to how good a single physical qubit can be.`,
+      zh: `显而易见的解法是造更好的量子比特，这项研究也一直在推进。但单个物理量子比特能做到多好，是有上限的。` },
+    { en: `The more interesting fix is to stop relying on single qubits at all.`,
+      zh: `更有意思的解法，是干脆不再依赖单个量子比特。` },
+    { en: `Instead, spread one piece of quantum information across many physical qubits and use their {{redundancy}} to detect and correct errors as they happen.`,
+      zh: `转而把一份量子信息分散到许多物理量子比特上，用它们的冗余来在误差发生时检测并纠正。` },
+    { en: `The bundle then behaves as a single, far more reliable {{logical qubit}}.`,
+      zh: `这一束比特随后就表现得像一个单一、可靠得多的"逻辑量子比特"。` },
+    { en: `This is quantum error correction, and it rests on a surprisingly forgiving result called the {{threshold theorem}}.`,
+      zh: `这就是量子纠错，它建立在一个出人意料地宽容的结论之上，叫做"阈值定理"。` },
+    { fig: 'logical' },
+    { en: `The theorem says that if the error rate of each physical operation is below some threshold, adding more qubits makes the logical error rate fall {{exponentially}}.`,
+      zh: `该定理指出：只要每次物理操作的错误率低于某个阈值，增加量子比特就能让逻辑错误率指数级下降。` },
+    { en: `Below the threshold, more hardware buys accuracy. Above it, more hardware buys nothing.`,
+      zh: `在阈值以下，更多硬件换来更高精度；在阈值以上，更多硬件什么也换不到。` },
+    { en: `That line between the two {{regimes}} is the number that actually matters.`,
+      zh: `两种情形之间的这条线，才是真正重要的那个数字。` },
+    { en: `Recent experiments have crossed it. Teams have built logical qubits from tens of physical ones and shown that the error rate falls as the code grows.`,
+      zh: `近期的实验已经越过了它。一些团队用几十个物理量子比特构建出逻辑量子比特，并证明随着编码规模扩大，错误率确实下降。` },
+    { en: `It is a modest result by the standards of headlines — a logical qubit is still worse than the best single physical qubit.`,
+      zh: `按新闻标题的标准，这只是个不起眼的成果——一个逻辑量子比特仍不如最好的单个物理量子比特。` },
+    { en: `But it is the first evidence that the {{scaling}} direction is the right one.`,
+      zh: `但这是第一个证据，说明扩展的方向是对的。` },
+    { en: `The engineering that follows is unglamorous and enormous.`,
+      zh: `随之而来的工程既不光鲜，也极其庞大。` },
+    { en: `Each logical qubit may eventually need thousands of physical ones, plus the control electronics to {{address}} them, all inside a refrigerator that cools the chip to a fraction of a degree above absolute zero.`,
+      zh: `每一个逻辑量子比特最终可能需要成千上万个物理量子比特，再加上寻址用的控制电子设备，全部放进一台把芯片冷却到接近绝对零度几分之一的制冷机里。` },
+    { en: `Wiring alone becomes a {{bottleneck}}: every qubit needs signals in, and every wire carries heat in.`,
+      zh: `单是布线就成了瓶颈：每个量子比特都需要输入信号，而每根导线都会把热量带进来。` },
+    { en: `This is why the field is increasingly a hardware {{discipline}} rather than a physics one.`,
+      zh: `这就是为什么这个领域正越来越像一门硬件学科，而不只是物理学。` },
+    { en: `The useful question to ask about any quantum claim is therefore not “how many qubits”.`,
+      zh: `因此，面对任何量子计算的宣称，该问的问题不是"有多少量子比特"。` },
+    { en: `It is: what is the logical error rate, how many physical qubits did it cost, and is that number going down as the system grows?`,
+      zh: `而是：逻辑错误率是多少？为此花了多少物理量子比特？随着系统变大，这个数字在下降吗？` },
+    { en: `A system that cannot answer those three has not yet demonstrated a computer. It has demonstrated a device.`,
+      zh: `回答不了这三个问题的系统，还不能说展示了一台计算机，它只展示了一个器件。` },
+    { en: `That distinction is worth keeping, because the gap between a device and a computer is exactly where the next ten years will be spent.`,
+      zh: `这个区别值得记住，因为从一个器件到一台计算机之间的那段距离，正是未来十年要花掉的地方。` },
+    { note: {
+        en: 'A device does something impressive once. A computer does something useful a billion times without being watched.',
+        zh: '器件是把一件了不起的事做一次；计算机是把一件有用的事做十亿次，而且不需要人盯着。'
+      } }
+  ],
+  words: {
+    'leaks': { ipa: '/liːks/', cn: 'v. 泄漏（leak 的第三人称单数）', ex: 'A qubit leaks information to its environment and loses its state.', exZh: '量子比特会向环境泄漏信息，从而失去自己的状态。' },
+    'redundancy': { ipa: '/rɪˈdʌndənsi/', cn: 'n. 冗余', ex: 'Error correction works by adding redundancy, not by removing noise.', exZh: '纠错靠增加冗余来工作，而不是靠消除噪声。' },
+    'logical qubit': { ipa: '/ˈlɒdʒɪkl ˈkwɪbɪt/', cn: 'n. 逻辑量子比特（由多个物理量子比特编码而成）', ex: 'One logical qubit may require thousands of physical ones.', exZh: '一个逻辑量子比特可能需要上千个物理量子比特。' },
+    'threshold theorem': { ipa: '/ˈθreʃhəʊld ˈθɪərəm/', cn: 'n. 阈值定理', ex: 'The threshold theorem is why error correction is possible at all.', exZh: '阈值定理正是纠错得以可能的原因。' },
+    'exponentially': { ipa: '/ˌekspəˈnenʃəli/', cn: 'adv. 指数级地', ex: 'Below the threshold, the error rate falls exponentially as the code grows.', exZh: '在阈值以下，随着编码规模扩大，错误率呈指数级下降。' },
+    'regimes': { ipa: '/reɪˈʒiːmz/', cn: 'n. 情形；区间（regime 的复数）', ex: 'The two regimes behave completely differently.', exZh: '这两种情形表现得完全不同。' },
+    'scaling': { ipa: '/ˈskeɪlɪŋ/', cn: 'n. 扩展；规模化', ex: 'The experiment is the first evidence that the scaling direction is correct.', exZh: '这个实验是第一个证据，说明扩展的方向是对的。' },
+    'address': { ipa: '/əˈdres/', cn: 'v. 寻址；访问', ex: 'The control electronics must address thousands of qubits individually.', exZh: '控制电子设备必须逐个寻址成千上万个量子比特。' },
+    'bottleneck': { ipa: '/ˈbɒtlnek/', cn: 'n. 瓶颈', ex: 'Wiring becomes the bottleneck long before the qubits do.', exZh: '早在量子比特成为瓶颈之前，布线就已经是瓶颈了。' },
+    'discipline': { ipa: '/ˈdɪsəplɪn/', cn: 'n. 学科；领域', ex: 'The field is turning into a hardware discipline.', exZh: '这个领域正在变成一门硬件学科。' }
+  },
+  quiz: [
+    { q: 'Why is the raw number of qubits a poor measure of a quantum computer?',
+      options: ['Because qubits are too expensive.',
+                'Because single physical qubits keep making errors, so more qubits does not mean more correct computation.',
+                'Because quantum computers do not use qubits.'],
+      answer: 1,
+      why: '物理量子比特会不断出错，几千次操作里错一次就前功尽弃；数量多不等于算得对。' },
+    { q: 'What does the threshold theorem say?',
+      options: ['If the error rate per physical operation is below a threshold, adding qubits makes the logical error rate fall exponentially.',
+                'The more qubits you have, the more errors you get.',
+                'The chip must be kept below a certain temperature.'],
+      answer: 0,
+      why: '定理的核心：低于阈值时，加大编码规模能让逻辑错误率指数级下降；高于阈值则毫无意义。' },
+    { q: 'Which three questions does the author recommend asking about any quantum claim?',
+      options: ['Price, size and power consumption.',
+                'What is the logical error rate, how many physical qubits did it cost, and is that number falling as the system grows?',
+                'How many qubits, what clock speed, and which company built it.'],
+      answer: 1,
+      why: '文章最后给出的三个问题就是这个，回答不了这三个问题的只能叫器件，不能叫计算机。' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
+   2026-10-31 · 生物医药 / 碱基编辑
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-10-31',
+  date: '2026-10-31',
+  topic: '生物医药',
+  title: 'Editing One Letter at a Time',
+  subtitle: 'The newer gene editors no longer cut the DNA. They rewrite it.',
+  level: 'CET-6',
+  body: [
+    { en: `CRISPR is usually described as molecular scissors, and for the first version of the technology that image is accurate.`,
+      zh: `CRISPR 通常被形容为分子剪刀，对这项技术的第一代而言，这个比喻是准确的。` },
+    { en: `The Cas9 protein cuts both strands of DNA at a chosen site, and the cell then repairs the break.`,
+      zh: `Cas9 蛋白在选定的位置把 DNA 的双链切断，随后由细胞来修复这个断裂。` },
+    { en: `The repair is not always neat. Cells often close the gap by deleting or inserting a few letters, which is useful for turning a gene off but useless for correcting a typo.`,
+      zh: `修复并不总是整齐的。细胞常常靠删掉或插入几个字母来弥合缺口——这对关掉一个基因有用，对改正一个错字却没用。` },
+    { en: `A newer class of tools avoids the cut altogether.`,
+      zh: `更新的一类工具干脆避开了"切"这一步。` },
+    { en: `These are called base editors, and their target is not a strand of DNA but a single letter within it.`,
+      zh: `它们叫碱基编辑器，目标不是一段 DNA 链，而是链中的一个字母。` },
+    { en: `The design is a {{hybrid}}: a Cas9 protein modified so that it can only {{nick}} one strand, fused to an enzyme that chemically converts one base into another.`,
+      zh: `这套设计是一种杂合体：一个被改造过、只能切开单链的 Cas9 蛋白，与一种能把一种碱基化学转化为另一种的酶融合在一起。` },
+    { en: `One common version turns a C into a T. Another turns an A into a G.`,
+      zh: `常见的版本之一把 C 变成 T，另一种把 A 变成 G。` },
+    { en: `Since C pairs with G and A pairs with T, changing one letter on one strand quietly changes its partner too.`,
+      zh: `因为 C 与 G 配对、A 与 T 配对，改变一条链上的一个字母，也就同时改变了它的搭档。` },
+    { en: `The cell's own repair machinery then accepts the new pair as if nothing had happened.`,
+      zh: `细胞自身的修复机制随后会接受这个新配对，仿佛什么都没发生过。` },
+    { fig: 'baseedit' },
+    { en: `The advantage is {{precision}}. Because the double strand stays intact, the cell never enters the error-prone repair pathway that produces unwanted insertions and deletions.`,
+      zh: `优势在于精确。因为双链始终完整，细胞不会进入那个容易出错的修复通路——正是它带来了不受欢迎的插入和缺失。` },
+    { en: `In lab comparisons, base editors produce far fewer of those {{by-products}} than standard Cas9.`,
+      zh: `在实验室对比中，碱基编辑器产生的这类副产物远少于标准 Cas9。` },
+    { en: `That matters for medicine, where an {{unintended}} edit in the wrong cell can become a cancer decades later.`,
+      zh: `这对医学很重要：在错误的细胞里发生一次非预期编辑，可能在几十年后变成癌症。` },
+    { en: `One base editor has already been approved for treating a blood disorder, and several others are in trials.`,
+      zh: `已有一款碱基编辑器获批用于治疗一种血液疾病，另有多款正在临床试验中。` },
+    { en: `But the approach has clear limits, and they are worth stating plainly.`,
+      zh: `但这条路有明显的边界，值得说清楚。` },
+    { en: `It can change one letter into another; it cannot {{insert}} a missing gene or delete a long stretch of DNA.`,
+      zh: `它能把一个字母换成另一个，却无法插入一个缺失的基因，也无法删掉一段长 DNA。` },
+    { en: `The editing window is narrow — only a few bases around the target site can be reached, which {{constrains}} where the tool can be aimed.`,
+      zh: `编辑窗口很窄——只有靶点周围几个碱基能够被触及，这限制了它能瞄准的位置。` },
+    { en: `And the hardest problem is not editing at all. It is {{delivery}}: getting the editor into the right organ, in enough cells, without triggering an immune response.`,
+      zh: `而最难的问题根本不是编辑本身，而是递送：把编辑器送进正确的器官、足够多的细胞里，同时不引发免疫反应。` },
+    { en: `Most current programmes therefore focus on tissues that are easy to reach, such as blood and the liver.`,
+      zh: `因此目前大多数项目都聚焦在容易到达的组织上，比如血液和肝脏。` },
+    { en: `The broader lesson is about how a field matures.`,
+      zh: `更广义的启示，是关于一个领域如何成熟。` },
+    { en: `The first version of a tool is celebrated for what it can do. The second version is judged by what it stops doing wrong.`,
+      zh: `工具的第一代因它能做什么而受到称赞，第二代则以它不再做错什么来被评判。` },
+    { en: `Base editing is that second version: less dramatic, more useful.`,
+      zh: `碱基编辑就是那个第二代：不那么轰动，却更有用。` },
+    { en: `It also shows how much of biology is still engineering.`,
+      zh: `它也说明，生物学中有多大一部分其实仍是工程问题。` },
+    { en: `A protein is a machine with {{tolerances}}. Change its shape slightly and it stops working, or starts working somewhere else.`,
+      zh: `蛋白质是一台有公差的机器。稍微改变它的形状，它就会失灵，或者在别的地方开始起作用。` },
+    { en: `The people who build these tools spend most of their time on the boring parts: making them smaller, more {{specific}}, easier to deliver.`,
+      zh: `制造这些工具的人，大部分时间都花在无聊的部分上：让它们更小、更专一、更容易递送。` },
+    { en: `That is where the next decade of progress will come from.`,
+      zh: `未来十年的进展正来自这里。` },
+    { note: {
+        en: 'The first generation of a tool is judged by what it can do. The second is judged by what it no longer gets wrong.',
+        zh: '第一代工具因"能做什么"被评价，第二代则因"不再做错什么"被评价。'
+      } }
+  ],
+  words: {
+    'hybrid': { ipa: '/ˈhaɪbrɪd/', cn: 'n. 杂合体；混合体', ex: 'The tool is a hybrid of a DNA-binding protein and an enzyme.', exZh: '这个工具是 DNA 结合蛋白与一种酶的杂合体。' },
+    'nick': { ipa: '/nɪk/', cn: 'v. 切开单链；造成切口', ex: 'The modified enzyme can only nick one strand, not cut both.', exZh: '改造后的酶只能切开一条链，而不能把两条都切断。' },
+    'precision': { ipa: '/prɪˈsɪʒn/', cn: 'n. 精确度', ex: 'The advantage of base editing lies in its precision.', exZh: '碱基编辑的优势在于它的精确度。' },
+    'by-products': { ipa: '/ˈbaɪ prɒdʌkts/', cn: 'n. 副产物', ex: 'Unwanted by-products are the main safety concern in gene editing.', exZh: '不需要的副产物是基因编辑中的主要安全隐患。' },
+    'unintended': { ipa: '/ˌʌnɪnˈtendɪd/', cn: 'adj. 非预期的；意外的', ex: 'An unintended edit in a healthy cell can be dangerous.', exZh: '在健康细胞中发生非预期编辑可能很危险。' },
+    'insert': { ipa: '/ɪnˈsɜːt/', cn: 'v. 插入', ex: 'Base editors cannot insert a whole new gene.', exZh: '碱基编辑器无法插入一个全新的基因。' },
+    'constrains': { ipa: '/kənˈstreɪnz/', cn: 'v. 限制；约束（constrain 的第三人称单数）', ex: 'A narrow editing window constrains where the tool can be aimed.', exZh: '狭窄的编辑窗口限制了工具能瞄准的位置。' },
+    'delivery': { ipa: '/dɪˈlɪvəri/', cn: 'n. 递送；投递', ex: 'Delivery, not editing, is the hardest problem in gene therapy.', exZh: '基因治疗中最难的问题是递送，而不是编辑。' },
+    'tolerances': { ipa: '/ˈtɒlərənsɪz/', cn: 'n. 公差；容差（tolerance 的复数）', ex: 'A protein works only within narrow mechanical tolerances.', exZh: '蛋白质只在很窄的机械公差内才能工作。' },
+    'specific': { ipa: '/spəˈsɪfɪk/', cn: 'adj. 专一的；特异的', ex: 'The editor must be specific enough to hit only one site.', exZh: '编辑器必须足够专一，只命中一个位点。' }
+  },
+  quiz: [
+    { q: 'What is the key difference between a base editor and standard Cas9?',
+      options: ['A base editor does not use a Cas protein at all.',
+                'A base editor nicks only one strand, so there is no double-strand break.',
+                'A base editor can insert a whole gene.'],
+      answer: 1,
+      why: '碱基编辑器用的是被改造过、只能切单链的 Cas9，因此不会产生双链断裂，也就绕开了容易出错的修复通路。' },
+    { q: 'According to the passage, what is the hardest remaining problem?',
+      options: ['Editing precision.', 'Delivery — getting the editor into the right organ and enough cells.', 'The cost of sequencing.'],
+      answer: 1,
+      why: '原文明确："the hardest problem is not editing at all. It is delivery"。' },
+    { q: 'What does the author mean by “the second version”?',
+      options: ['A version judged by what it stops doing wrong rather than by what it can do.',
+                'A cheaper version of the same tool.',
+                'A version that has been abandoned.'],
+      answer: 0,
+      why: '第二代的评价标准从"能做什么"变成"不再做错什么"，这正是碱基编辑相对第一代 CRISPR 的位置。' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
+   2026-10-30 · 科技硬件 / 先进封装
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-10-30',
+  date: '2026-10-30',
+  topic: '科技硬件',
+  title: 'Why a Chip Is Starting to Look Like a Building',
+  subtitle: 'The performance race has moved from the transistor to the space between them.',
+  level: 'CET-6',
+  body: [
+    { en: `For fifty years, the promise of computing was simple: shrink the transistor, and everything gets faster.`,
+      zh: `五十年来，计算的承诺一直很简单：把晶体管做小，一切就会变快。` },
+    { en: `That promise is now harder to keep. Making a transistor smaller still works, but the gains are no longer free.`,
+      zh: `这个承诺如今越来越难兑现。把晶体管做小仍然可行，但收益不再是免费的。` },
+    { en: `The reason is that a modern chip is limited less by how fast it computes than by how fast it can be {{fed}}.`,
+      zh: `原因在于，现代芯片的瓶颈已不在于算得多快，而在于它被"喂"数据的速度。` },
+    { en: `A processor can finish an operation in a fraction of a {{nanosecond}}, yet waiting for data from memory may cost a hundred times more.`,
+      zh: `一个处理器可以在几分之一纳秒内完成一次运算，但等待内存送来的数据可能要贵上一百倍。` },
+    { en: `For decades, engineers solved this by putting more memory on the same piece of silicon.`,
+      zh: `几十年来，工程师的解法是把更多内存放到同一块硅片上。` },
+    { en: `That has run into a wall: a single large die is expensive to manufacture, and one tiny defect can ruin the whole thing.`,
+      zh: `但这条路撞墙了：一整块大芯片制造成本极高，一个微小的缺陷就能毁掉整片。` },
+    { en: `So the industry changed the question. Instead of building one big chip, it now builds several smaller ones and connects them.`,
+      zh: `于是业界换了个问法。不再造一块大芯片，而是造几块小的，再把它们连起来。` },
+    { en: `These pieces are called {{chiplets}}, and the technique is called advanced {{packaging}}.`,
+      zh: `这些小块叫"芯粒"，这项技术叫先进封装。` },
+    { en: `The word “packaging” sounds humble, like the box a product arrives in.`,
+      zh: `"封装"这个词听起来很朴素，像是产品到手时的那个盒子。` },
+    { en: `In reality it is now where much of the engineering happens.`,
+      zh: `可实际上，如今大量的工程工作就发生在这里。` },
+    { fig: 'package' },
+    { en: `The chips sit on a thin {{interposer}} — a silicon bridge that carries thousands of tiny wires between them.`,
+      zh: `这些芯片坐在一层薄薄的中介层上——一座硅桥，在它们之间承载成千上万根细微导线。` },
+    { en: `Beside the processor, memory is stacked in towers called {{HBM}}, each layer joined by vertical connections that pass straight through the silicon.`,
+      zh: `处理器旁边，内存被堆成一座座塔，称为 HBM，每一层都通过直接穿过硅片的垂直连接相连。` },
+    { en: `A stack of eight layers can move data over a {{bus}} a thousand times wider than a conventional one, at a fraction of the energy per bit.`,
+      zh: `一个八层堆栈能通过比传统通道宽上千倍的总线搬运数据，而每比特的能耗只有一小部分。` },
+    { en: `This is why the fastest AI accelerators are enormous: not because the logic is huge, but because the memory has to be close.`,
+      zh: `这就是为什么最快的 AI 加速器体积极大：不是因为逻辑部分大，而是因为内存必须靠近。` },
+    { en: `The cost is that almost nothing about it is easy.`,
+      zh: `代价是，这件事几乎没有一处是容易的。` },
+    { en: `Every wire must be aligned to within a few micrometres, and any {{warpage}} in the stack can break the connection.`,
+      zh: `每一根导线都必须对准到几微米以内，堆栈里任何一点翘曲都可能让连接失效。` },
+    { en: `Heat is worse. Eight layers of memory packed together cannot cool themselves the way separate chips could.`,
+      zh: `散热更糟。八层内存挤在一起，没法像分开的芯片那样自行散热。` },
+    { en: `And {{yield}} becomes a gamble: if one chiplet in a package fails, the whole package may be {{scrap}}.`,
+      zh: `良率也成了一场赌博：如果封装里有一颗芯粒失效，整个封装可能就报废了。` },
+    { en: `Manufacturers respond by testing each chiplet before assembly, and by designing packages that can lose one piece and still work.`,
+      zh: `厂商的应对是：在组装前逐颗测试芯粒，并设计出即使损失一块仍能工作的封装。` },
+    { en: `None of this is visible to the person using a phone.`,
+      zh: `这一切对使用手机的人来说都不可见。` },
+    { en: `What is visible is the consequence: performance now improves in steps, tied to new packaging generations rather than to a steady yearly shrink.`,
+      zh: `可见的是后果：性能如今以台阶式提升，绑定在封装的新世代上，而不是每年稳定地缩小。` },
+    { en: `That changes what a “generation” means. It is less a number on a transistor and more an architecture of connections.`,
+      zh: `这也改变了"一代"的含义。它不再是晶体管上的一个数字，而更像一种连接的结构。` },
+    { en: `For students, it is a useful correction to a common assumption.`,
+      zh: `对学生来说，这是对一个常见假设的有益纠正。` },
+    { en: `The interesting problems in computing are no longer only in the transistor. They are in the wires, the heat, and the mechanical {{tolerance}} between pieces.`,
+      zh: `计算中有趣的问题不再只存在于晶体管里。它们在导线里、在热量里、在零件之间的机械公差里。` },
+    { en: `That is materials science, mechanical engineering and physics as much as it is electronics.`,
+      zh: `这既属于电子学，也同样属于材料科学、机械工程和物理。` },
+    { en: `Which means the field is more open than it looks.`,
+      zh: `这意味着这个领域比看上去更开放。` },
+    { note: {
+        en: 'The bottleneck moved from “how small can we draw it” to “how close can we put it” — and closeness is a mechanical problem.',
+        zh: '瓶颈从"能画多小"变成了"能放多近"——而"近"是一个机械问题。'
+      } }
+  ],
+  words: {
+    'fed': { ipa: '/fed/', cn: 'v. 供给；为…提供输入（feed 的过去分词）', ex: 'The chip is starved because memory cannot feed it fast enough.', exZh: '芯片之所以挨饿，是因为内存喂它的速度不够快。' },
+    'nanosecond': { ipa: '/ˈnænəʊsekənd/', cn: 'n. 纳秒（十亿分之一秒）', ex: 'Light travels about thirty centimetres in one nanosecond.', exZh: '光在一纳秒内大约走三十厘米。' },
+    'chiplets': { ipa: '/ˈtʃɪpləts/', cn: 'n. 芯粒；小芯片（chiplet 的复数）', ex: 'Designers split one large chip into four chiplets.', exZh: '设计者把一块大芯片拆成四颗芯粒。' },
+    'packaging': { ipa: '/ˈpækɪdʒɪŋ/', cn: 'n. 封装（把多颗芯片组装互连的工艺）', ex: 'Advanced packaging is now as important as the transistor itself.', exZh: '先进封装如今和晶体管本身一样重要。' },
+    'interposer': { ipa: '/ˌɪntəˈpəʊzə/', cn: 'n. 中介层（芯片之间的硅转接板）', ex: 'The interposer carries the wires that connect the dies.', exZh: '中介层承载着连接各芯片的导线。' },
+    'HBM': { ipa: '/ˌeɪtʃ biː ˈem/', cn: 'n. 高带宽内存（High Bandwidth Memory）', ex: 'Each HBM stack holds eight memory layers.', exZh: '每个 HBM 堆栈包含八层内存。' },
+    'bus': { ipa: '/bʌs/', cn: 'n. 总线（数据传输通道）', ex: 'A wider bus moves more data in the same clock cycle.', exZh: '更宽的总线在同一时钟周期内搬运更多数据。' },
+    'warpage': { ipa: '/ˈwɔːpɪdʒ/', cn: 'n. 翘曲；变形', ex: 'Even a slight warpage breaks the finest connections.', exZh: '即使轻微的翘曲也会让最细的连接断裂。' },
+    'yield': { ipa: '/jiːld/', cn: 'n. 良率；成品率', ex: 'A single bad die can lower the yield of the whole batch.', exZh: '一颗坏芯片就能拉低整批的良率。' },
+    'scrap': { ipa: '/skræp/', cn: 'n. 废品；报废', ex: 'If one part fails, the entire package becomes scrap.', exZh: '只要一个部件失效，整个封装就成了废品。' },
+    'tolerance': { ipa: '/ˈtɒlərəns/', cn: 'n. 公差；容差', ex: 'The parts must be placed within a tolerance of a few micrometres.', exZh: '这些部件必须放置在几微米的公差之内。' }
+  },
+  quiz: [
+    { q: 'Why are the fastest AI accelerators so large?',
+      options: ['Because the logic circuits themselves are enormous.',
+                'Because memory has to sit close to the processor, so it is stacked beside it on the same package.',
+                'Because they need very large cooling fans.'],
+      answer: 1,
+      why: '原文："not because the logic is huge, but because the memory has to be close."' },
+    { q: 'What does “yield becomes a gamble” refer to?',
+      options: ['Fluctuations in the price of manufacturing equipment.',
+                'The risk that one failed chiplet makes the whole package useless.',
+                'Instability in the chip clock frequency.'],
+      answer: 1,
+      why: '封装里任何一颗芯粒失效都可能让整个封装报废，所以良率成了赌博。' },
+    { q: 'Where does the author say the interesting problems now are?',
+      options: ['Only in shrinking the transistor.',
+                'In the wires, the heat, and the mechanical tolerance between parts.',
+                'Only in software optimisation.'],
+      answer: 1,
+      why: '文章结尾说问题在导线、散热和零件之间的机械公差里，因此这既是电子学，也是材料与机械工程。' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
+   ① 2026-10-29  AI 大模型（示范推文 · 约 500 词 · 10 分钟）
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-10-29',
+  date: '2026-10-29',
+  topic: 'AI 大模型',
+  title: 'The Model That Fits in Your Pocket',
+  subtitle: 'Why the most interesting race in AI is no longer about size.',
+  level: 'CET-6',
+  body: [
+    { en: `For years, the story of artificial intelligence was a story about {{scale}}: bigger models, bigger {{clusters}}, bigger electricity bills.`,
+      zh: `多年来，人工智能的故事一直是一个关于规模的故事：更大的模型、更大的集群、更高的电费。` },
+    { en: `That story is now being rewritten — not by the largest labs, but by engineers who are trying to make a model small enough to run on a phone.`,
+      zh: `而如今，这个故事正在被改写——改写者不是最大的实验室，而是那些努力让模型小到可以跑在手机上的工程师。` },
+    { en: `A large language model is, at its core, a very long list of numbers called {{parameters}}.`,
+      zh: `从本质上说，大语言模型就是一长串被称为"参数"的数字。` },
+    { en: `A frontier model may hold hundreds of billions of them, and every word it generates requires a small {{fraction}} of that list to be read.`,
+      zh: `一个前沿模型可能拥有数千亿个参数，而它每生成一个词，都需要读取其中一小部分。` },
+    { en: `This is why {{inference}} — using a trained model, rather than training it — is so expensive.`,
+      zh: `这就是为什么"推理"——即使用一个已经训练好的模型，而不是训练它——如此昂贵。` },
+    { en: `Training happens once; inference happens billions of times a day, and each time the hardware must move an enormous amount of data from memory to the processor.`,
+      zh: `训练只发生一次；推理每天发生数十亿次，而每一次硬件都必须把海量数据从内存搬运到处理器。` },
+    { en: `On a server this is merely costly. On a phone it becomes a {{bottleneck}}, because memory {{bandwidth}} and battery life are fixed.`,
+      zh: `在服务器上，这仅仅是成本问题。在手机上，它却成了一个瓶颈，因为内存带宽和电池续航都是固定的。` },
+    { en: `Engineers have therefore attacked the problem from two directions.`,
+      zh: `因此，工程师从两个方向着手解决这个问题。` },
+    { en: `The first is {{quantization}}, which stores each parameter in fewer bits — often eight instead of sixteen, sometimes four.`,
+      zh: `第一种是"量化"，即用更少的比特来存储每个参数——通常是 8 位而不是 16 位，有时甚至只有 4 位。` },
+    { en: `The model shrinks to roughly a quarter of its original size, and on most tasks the loss in accuracy is {{negligible}}.`,
+      zh: `模型的体积大约缩减到原来的四分之一，而在大多数任务上，精度的损失微乎其微。` },
+    { fig: 'precision' },
+    { en: `The second is {{distillation}}, in which a small model is trained to imitate the answers of a much larger one.`,
+      zh: `第二种是"蒸馏"，即训练一个小模型去模仿一个大得多的模型的回答。` },
+    { en: `The student never sees the teacher's internal machinery; it learns only from the teacher's output.`,
+      zh: `学生模型从不接触教师模型的内部机制，它只从教师的输出中学习。` },
+    { en: `Neither technique is free.`,
+      zh: `这两种技术都不是没有代价的。` },
+    { en: `Quantization trades precision for memory, distillation trades capacity for speed, and each involves a {{trade-off}} that has to be measured rather than assumed.`,
+      zh: `量化用精度换内存，蒸馏用容量换速度，而每一种都涉及一种必须实测而非假定的取舍。` },
+    { en: `The results are already visible to ordinary users.`,
+      zh: `这些成果对普通用户来说已经可见。` },
+    { en: `Phone keyboards now suggest whole sentences offline, cameras identify plants without a network connection, and translation apps work in airplane mode.`,
+      zh: `手机键盘如今可以离线联想整句，相机无需联网就能识别植物，翻译应用在飞行模式下也能工作。` },
+    { en: `In each case a model that once needed a data centre now runs in a few hundred megabytes of memory.`,
+      zh: `在每一个例子中，曾经需要数据中心才能运行的模型，如今只占用几百兆内存。` },
+    { en: `The engineering consequences reach further than convenience.`,
+      zh: `这些工程后果的影响，远超"方便"本身。` },
+    { en: `On-device models {{preserve}} privacy, because the data never leaves the phone.`,
+      zh: `端侧模型保护隐私，因为数据从不离开手机。` },
+    { en: `They remove {{latency}}, because no request has to travel to a distant server and back.`,
+      zh: `它们消除了延迟，因为请求无需往返于遥远的服务器。` },
+    { en: `And they fail gracefully: a small model that runs at all is more useful than a brilliant one that cannot connect.`,
+      zh: `而且它们的失效方式很温和：一个至少还能运行的小模型，胜过一个无法联网的卓越模型。` },
+    { en: `None of this means that scale has stopped mattering.`,
+      zh: `这一切都不意味着规模已经不重要了。` },
+    { en: `The hardest problems — long {{reasoning}} chains, reliable code generation, genuinely new mathematics — still belong to the largest systems.`,
+      zh: `最困难的问题——长链推理、可靠的代码生成、真正新颖的数学——仍然属于最大的那些系统。` },
+    { en: `What has changed is the {{assumption}} that every useful model must live in the cloud.`,
+      zh: `真正改变的是那个假设：每一个有用的模型都必须住在云端。` },
+    { en: `A more plausible future is a {{division of labour}}.`,
+      zh: `一个更可信的未来是分工。` },
+    { en: `The small model handles what is routine, private and urgent; the large one is called only when a task exceeds the local {{threshold}}.`,
+      zh: `小模型处理常规的、私密的、紧急的任务；只有当任务超出本地的阈值时，才会去调用大模型。` },
+    { en: `The phone becomes a filter rather than a {{terminal}}, deciding what deserves to be sent away.`,
+      zh: `手机变成了一个过滤器，而不是一个终端，它决定什么才值得被发送出去。` },
+    { fig: 'route' },
+    { en: `For students learning the technology, this shift is encouraging.`,
+      zh: `对学习这门技术的学生来说，这种转变是令人鼓舞的。` },
+    { en: `You no longer need a whole cluster of graphics cards to experiment with real models; a single consumer GPU, a laptop, or even a phone is enough to see how the ideas behave.`,
+      zh: `你不再需要一整套显卡才能试验真实的模型；一块消费级显卡、一台笔记本，甚至一部手机，就足以让你看到这些想法是如何运作的。` },
+    { en: `The centre of gravity of the field is moving from who can afford the biggest model to who can make the smallest one work well.`,
+      zh: `这个领域的重心，正在从"谁负担得起最大的模型"转向"谁能让最小的模型好好工作"。` },
+    { en: `That is a race a small team can still enter.`,
+      zh: `这是一场小团队仍然能够参与的比赛。` },
+    { note: {
+        en: 'A 4-bit 7B model takes roughly 4 GB of memory — which means an 8 GB laptop GPU is already a legitimate research platform, not a toy.',
+        zh: '一个 4-bit 量化的 7B 模型大约只占 4GB 显存——也就是说，一块 8GB 的笔记本显卡已经可以当作正经的实验平台，而不是玩具。'
+      } }
+  ],
+  words: {
+    'scale':      { ipa: '/skeɪl/', cn: 'n. 规模；尺度', ex: 'The project failed because it was designed at the wrong scale.', exZh: '这个项目之所以失败，是因为它按错误的规模来设计。' },
+    'clusters':   { ipa: '/ˈklʌstəz/', cn: 'n. 集群；成组的设备（cluster 的复数）', ex: 'The lab runs its experiments on a cluster of forty machines.', exZh: '这个实验室在由四十台机器组成的集群上运行实验。' },
+    'parameters': { ipa: '/pəˈræmɪtəz/', cn: 'n. 参数（parameter 的复数）', ex: 'Changing two parameters can alter the model\u2019s behaviour completely.', exZh: '改动两个参数就可能彻底改变模型的行为。' },
+    'fraction':   { ipa: '/ˈfrækʃn/', cn: 'n. 一小部分；分数', ex: 'Only a fraction of the data was ever examined.', exZh: '这些数据中只有一小部分被真正查看过。' },
+    'inference':  { ipa: '/ˈɪnfərəns/', cn: 'n. 推理；推断（此处指模型的使用阶段）', ex: 'Inference is cheap on paper and expensive on real hardware.', exZh: '推理在纸面上很便宜，在真实硬件上却非常昂贵。' },
+    'bottleneck': { ipa: '/ˈbɒtlnek/', cn: 'n. 瓶颈；制约环节', ex: 'Memory access, not arithmetic, is the real bottleneck.', exZh: '真正的瓶颈是内存访问，而不是算术运算。' },
+    'bandwidth':  { ipa: '/ˈbændwɪdθ/', cn: 'n. 带宽', ex: 'More bandwidth means the processor waits less for data.', exZh: '带宽更大意味着处理器等待数据的时间更少。' },
+    'quantization': { ipa: '/ˌkwɒntɪˈzeɪʃn/', cn: 'n. 量化（降低数值精度以压缩模型）', ex: 'Quantization cut the file size by three quarters.', exZh: '量化把文件体积压缩了四分之三。' },
+    'negligible': { ipa: '/ˈneɡlɪdʒəbl/', cn: 'adj. 微不足道的；可忽略的', ex: 'The difference in accuracy was negligible.', exZh: '精度上的差异微不足道。' },
+    'distillation': { ipa: '/ˌdɪstɪˈleɪʃn/', cn: 'n. 蒸馏（用大模型训练小模型的方法）', ex: 'Distillation transfers behaviour, not structure.', exZh: '蒸馏传递的是行为，而不是结构。' },
+    'trade-off':  { ipa: '/ˈtreɪd ɒf/', cn: 'n. 取舍；权衡', ex: 'Every compression method is a trade-off between size and fidelity.', exZh: '每种压缩方法都是在体积与保真度之间的取舍。' },
+    'preserve':   { ipa: '/prɪˈzɜːv/', cn: 'v. 保留；保护', ex: 'Running the model locally preserves the user\u2019s privacy.', exZh: '在本地运行模型能保护用户隐私。' },
+    'latency':    { ipa: '/ˈleɪtənsi/', cn: 'n. 延迟；时延', ex: 'Users notice latency above about two hundred milliseconds.', exZh: '延迟超过大约两百毫秒，用户就会察觉。' },
+    'reasoning':  { ipa: '/ˈriːzənɪŋ/', cn: 'n. 推理；论证', ex: 'Long reasoning chains remain difficult for small models.', exZh: '长链推理对小模型来说仍然困难。' },
+    'assumption': { ipa: '/əˈsʌmpʃn/', cn: 'n. 假设；假定', ex: 'The whole design rests on a single assumption.', exZh: '整个设计都建立在一个假设之上。' },
+    'division of labour': { ipa: '/dɪˈvɪʒn əv ˈleɪbə/', cn: 'n. 分工', ex: 'A clear division of labour made the team faster.', exZh: '明确的分工让团队变得更快。' },
+    'threshold':  { ipa: '/ˈθreʃhəʊld/', cn: 'n. 阈值；临界值', ex: 'Once a task passes a certain threshold, the local model gives up.', exZh: '一旦任务超过某个阈值，本地模型就会放弃。' },
+    'terminal':   { ipa: '/ˈtɜːmɪnl/', cn: 'n. 终端（设备）', ex: 'The phone is no longer a terminal; it is a filter.', exZh: '手机不再是一个终端，而是一个过滤器。' }
+  },
+  quiz: [
+    { q: 'According to the text, why is inference more expensive than training in practice?',
+      options: ['Because inference needs a much larger model.',
+                'Because it happens billions of times a day, and every run must move huge amounts of data from memory.',
+                'Because training is done on cheap consumer hardware.'],
+      answer: 1,
+      why: '训练只发生一次，推理每天发生数十亿次；每次都要把大量参数从内存搬到处理器，成本乘以次数之后就很惊人。' },
+    { q: 'What is the main difference between quantization and distillation?',
+      options: ['Quantization stores parameters in fewer bits; distillation trains a small model to imitate a larger one.',
+                'Both of them simply reduce the number of layers in the network.',
+                'Distillation can only be used on servers, never on phones.'],
+      answer: 0,
+      why: '量化是"压缩存储精度"（16 位→8 位/4 位），蒸馏是"让小模型学会大模型的输出"，两者手段完全不同。' },
+    { q: 'The author\u2019s attitude towards on-device models is best described as:',
+      options: ['They will soon replace cloud models completely.',
+                'They are useful but still limited on the hardest tasks, and will work alongside large models.',
+                'They are mostly a marketing idea with little real value.'],
+      answer: 1,
+      why: '文中明确说 "None of this means that scale has stopped mattering"，最难的推理、代码、数学仍属于最大系统，未来是分工而非替代。' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
+   ② 2026-10-28  金融交易 / 市场微观结构（约 330 词）
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-10-28',
+  date: '2026-10-28',
+  topic: '量化金融',
+  title: 'The Market That Lives in Milliseconds',
+  subtitle: 'What actually happens in the microseconds after you press “buy”.',
+  level: 'CET-6',
+  body: [
+    { en: `When you press “buy” in a trading app, nothing seems to happen.`,
+      zh: `当你在交易软件里按下"买入"，似乎什么都没发生。` },
+    { en: `In reality your order enters a queue, is matched against another order, and is confirmed — all within a few hundred {{microseconds}}, a thousand times faster than a blink.`,
+      zh: `实际上，你的订单进入一个队列，与另一笔订单撮合，然后被确认——全部在几百微秒内完成，比眨一次眼快一千倍。` },
+    { en: `The place where this happens is called the {{order book}}.`,
+      zh: `这一切发生的地方，叫做订单簿。` },
+    { en: `It is simply two lists: everyone willing to buy at each price, and everyone willing to sell.`,
+      zh: `它就是两份清单：每个价位上所有愿意买入的人，以及所有愿意卖出的人。` },
+    { en: `The gap between the best buy and the best sell is the {{spread}}, and it is where market makers earn their living.`,
+      zh: `最优买价与最优卖价之间的差额就是价差，做市商正是靠它谋生。` },
+    { en: `A market maker quotes both sides at once and profits from that gap, but takes on {{inventory}} risk, because the price may move before the position is closed.`,
+      zh: `做市商同时报出买卖两边价格，从价差中获利，但要承担库存风险：在头寸平掉之前，价格可能已经变化。` },
+    { fig: 'orderbook' },
+    { en: `Speed matters because information arrives unevenly.`,
+      zh: `速度之所以重要，是因为信息的到达并不均匀。` },
+    { en: `If a large buyer\u2019s order becomes visible in one market a millisecond before it appears in another, whoever sees it first can trade ahead of the price move.`,
+      zh: `如果一个大买家的订单在一个市场比在另一个市场早一毫秒可见，那么先看到的人就能在价格变动之前抢先交易。` },
+    { en: `This is {{arbitrage}} in its purest form, and it explains why firms pay to put their servers inside the exchange\u2019s own building.`,
+      zh: `这是最纯粹形式的套利，也解释了为什么公司愿意花钱把服务器放进交易所自己的大楼里。` },
+    { en: `The practice is called {{colocation}}, and the advantage it buys is measured in microseconds.`,
+      zh: `这种做法叫托管共置，它换来的优势以微秒计。` },
+    { en: `A firm that is one microsecond faster can take an opportunity that a slower firm never even sees.`,
+      zh: `快一微秒的公司，能抓住一个更慢的公司根本看不到的机会。` },
+    { en: `Critics argue that this is a {{zero-sum}} game, consuming serious engineering talent for no social gain.`,
+      zh: `批评者认为这是一场零和博弈，消耗了大量工程人才，却没有带来社会收益。` },
+    { en: `Defenders reply that speed competition has made markets cheaper: spreads on {{liquid}} stocks have narrowed sharply over two decades, and that saving is paid to ordinary investors.`,
+      zh: `支持者则回应说，速度竞争让市场变得更便宜：流动性好的股票，其价差在过去二十年里大幅收窄，而这份节省最终由普通投资者受益。` },
+    { en: `Both sides are partly right, and the interesting question is where the boundary lies.`,
+      zh: `双方都有部分道理，而真正有趣的问题是边界在哪里。` },
+    { en: `For a student, the lesson is not that speed is good or bad.`,
+      zh: `对一名学生来说，收获不在于速度是好还是坏。` },
+    { en: `It is that every price you see is the {{outcome}} of a physical process — cables, switches, clocks — rather than an abstract number.`,
+      zh: `而在于：你所看到的每一个价格，都是一个物理过程的产物——线缆、交换机、时钟——而不是一个抽象的数字。` },
+    { en: `The same logic explains why exchanges sell faster connections at higher prices, and why a new cable across an ocean can shift the balance between two cities.`,
+      zh: `同样的逻辑可以解释：为什么交易所能以更高的价格出售更快的连接，以及为什么一条新的海底光缆能改变两座城市之间的力量平衡。` },
+    { en: `None of this makes price movements predictable; it only makes the machinery visible.`,
+      zh: `这一切并不能让价格变动变得可预测，它只是让这台机器的构造变得可见。` },
+    { note: {
+        en: 'The price on your screen is not a fact about the world. It is the last successful match in a queue that never stops.',
+        zh: '你屏幕上的价格不是关于世界的事实，而是一个永不停歇的队列里最近一次成功撮合的结果。'
+      } }
+  ],
+  words: {
+    'microseconds': { ipa: '/ˈmaɪkrəʊsekəndz/', cn: 'n. 微秒（百万分之一秒）', ex: 'The difference is measured in microseconds, not seconds.', exZh: '这一差异以微秒计，而不是以秒计。' },
+    'order book':   { ipa: '/ˈɔːdə bʊk/', cn: 'n. 订单簿（挂单集合）', ex: 'The order book shows where buyers and sellers are waiting.', exZh: '订单簿显示了买卖双方都在哪里等待。' },
+    'spread':       { ipa: '/spred/', cn: 'n. 价差（买卖报价之差）', ex: 'A tighter spread means a cheaper trade for everyone.', exZh: '价差更小，意味着每个人的交易成本都更低。' },
+    'inventory':    { ipa: '/ˈɪnvəntri/', cn: 'n. 库存；持仓', ex: 'The dealer had to hold the inventory until a buyer appeared.', exZh: '交易商不得不持有这份库存，直到有买家出现。' },
+    'arbitrage':    { ipa: '/ˈɑːbɪtrɑːʒ/', cn: 'n. 套利', ex: 'Arbitrage closes price differences between two markets.', exZh: '套利会抹平两个市场之间的价差。' },
+    'colocation':   { ipa: '/ˌkəʊləʊˈkeɪʃn/', cn: 'n. 托管共置（把服务器放进交易所机房）', ex: 'Colocation reduces the distance a signal must travel.', exZh: '托管共置缩短了信号必须经过的距离。' },
+    'zero-sum':     { ipa: '/ˌzɪərəʊ ˈsʌm/', cn: 'adj. 零和的（一方所得即另一方所失）', ex: 'Not every competitive market is a zero-sum game.', exZh: '并非每个竞争性市场都是零和博弈。' },
+    'liquid':       { ipa: '/ˈlɪkwɪd/', cn: 'adj. 流动性好的；易变现的', ex: 'Large-cap stocks are far more liquid than small ones.', exZh: '大盘股比小盘股的流动性好得多。' },
+    'outcome':      { ipa: '/ˈaʊtkʌm/', cn: 'n. 结果；产物', ex: 'The final price is the outcome of thousands of small decisions.', exZh: '最终价格是成千上万个小决策的结果。' }
+  },
+  quiz: [
+    { q: 'Why do trading firms pay to place their servers inside the exchange building?',
+      options: ['Because the rent there is cheaper than elsewhere.',
+                'Because being physically closer shortens the signal path and saves microseconds.',
+                'Because regulations require all servers to be inside the exchange.'],
+      answer: 1,
+      why: '文章说这种做法叫 colocation，买到的优势以微秒计——物理距离短，信号到达更早。' },
+    { q: 'What is the author\u2019s final conclusion about market speed?',
+      options: ['Speed competition should be banned.',
+                'It does not make prices predictable; it only makes the underlying machinery visible.',
+                'Only large firms can ever understand the market.'],
+      answer: 1,
+      why: '最后一句明确："None of this makes price movements predictable; it only makes the machinery visible."' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
+   ③ 2026-10-27  机器人 / 强化学习（约 290 词）
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-10-27',
+  date: '2026-10-27',
+  topic: '机器人',
+  title: 'Learning to Walk Before Learning to See',
+  subtitle: 'Why legged robots are trained in simulation, and what that teaches us about control.',
+  level: 'CET-6',
+  body: [
+    { en: `A quadruped robot can cross gravel, climb stairs and recover from a kick — without a map, a camera, or any explicit model of the ground beneath it.`,
+      zh: `一台四足机器人能走过碎石、爬上台阶、被踢一脚之后重新站稳——而它没有地图、没有摄像头，也没有关于脚下地面的任何显式模型。` },
+    { en: `The behaviour is learned, not programmed.`,
+      zh: `这种行为是学出来的，不是编出来的。` },
+    { en: `Walking is hard because a legged machine touches the ground at only a few small points, and every contact is a sudden, unpredictable {{impact}}.`,
+      zh: `行走之所以困难，是因为腿式机器只有少数几个小点与地面接触，而每一次接触都是一次突然且不可预测的冲击。` },
+    { en: `Thousands of simulated copies of the robot are dropped into randomized {{terrain}} — slopes that shift, friction that changes, motors that fail — and each copy is rewarded for staying upright and moving forward.`,
+      zh: `成千上万个仿真机器人副本被投放到随机化的地形中——会变动的斜坡、会变化的摩擦、会失效的电机——每一个都因保持直立并向前移动而获得奖励。` },
+    { en: `This approach is called {{reinforcement learning}}, and it has one decisive advantage over hand-written control: the engineer no longer has to {{anticipate}} every situation.`,
+      zh: `这种方法叫强化学习，它相对于手写控制有一个决定性优势：工程师不必再预判每一种情况。` },
+    { fig: 'simreal' },
+    { en: `The difficulty is the {{gap}} between simulation and reality.`,
+      zh: `难点在于仿真与现实之间的差距。` },
+    { en: `A simulator is always a simplification, and a policy that exploits a flaw in the simulator will fail on real hardware.`,
+      zh: `仿真器永远是一种简化，而一个利用了仿真器缺陷的策略，在真实硬件上就会失效。` },
+    { en: `Engineers therefore randomize everything they can — mass, delay, sensor noise — so that the policy learns to survive variation instead of one ideal world.`,
+      zh: `因此，工程师把所有能随机化的东西都随机化——质量、延迟、传感器噪声——让策略学会在变化中生存，而不是只适应一个理想世界。` },
+    { en: `Modern controllers also run at high frequency, often several hundred times a second, because balance is restored by many small corrections rather than one large decision.`,
+      zh: `现代控制器还以很高的频率运行，通常每秒数百次，因为平衡是靠许多微小的修正恢复的，而不是靠一次大的决策。` },
+    { en: `The result is a controller that {{generalizes}}, and the cost is that it is hard to explain.`,
+      zh: `结果就是一个具备泛化能力的控制器，代价是它很难被解释。` },
+    { en: `When the robot falls, no single line of code is at fault.`,
+      zh: `当机器人摔倒时，并没有哪一行代码是"有错"的。` },
+    { en: `That is the real trade: we gain {{robustness}} and we lose {{transparency}}.`,
+      zh: `这才是真正的取舍：我们获得了鲁棒性，却失去了透明性。` },
+    { en: `For a machine that works beside people, this trade has to be negotiated carefully.`,
+      zh: `对于一台在人身边工作的机器来说，这笔交易必须被谨慎地协商。` },
+    { en: `The lesson reaches beyond robotics.`,
+      zh: `这个教训远不止适用于机器人。` },
+    { en: `Any system that must act in a messy world faces the same question: do you model the world precisely and fail when it changes, or learn to react and give up the explanation?`,
+      zh: `任何必须在一个混乱世界中行动的系统，都面临同一个问题：你是精确地给世界建模、然后在世界改变时失败，还是学会反应、却放弃对它的解释？` },
+    { note: {
+        en: 'Every controller that learns from experience buys adaptability with explainability. Robotics is simply where that bill comes due first.',
+        zh: '每一个从经验中学习的控制器，都是用可解释性来换取适应性。只不过在机器人身上，这笔账最早到期。'
+      } }
+  ],
+  words: {
+    'impact':        { ipa: '/ˈɪmpækt/', cn: 'n. 冲击；碰撞（此处指触地冲击）', ex: 'Every landing puts a sudden impact on the joints.', exZh: '每一次落地都会给关节带来一次突然的冲击。' },
+    'terrain':       { ipa: '/təˈreɪn/', cn: 'n. 地形；地势', ex: 'The vehicle is designed for rough terrain.', exZh: '这台载具是为崎岖地形设计的。' },
+    'reinforcement learning': { ipa: '/ˌriːɪnˈfɔːsmənt ˈlɜːnɪŋ/', cn: 'n. 强化学习', ex: 'Reinforcement learning improves through trial and reward.', exZh: '强化学习通过试错与奖励不断改进。' },
+    'anticipate':    { ipa: '/ænˈtɪsɪpeɪt/', cn: 'v. 预料；预判', ex: 'No engineer can anticipate every possible failure.', exZh: '没有工程师能预料到每一种可能的故障。' },
+    'gap':           { ipa: '/ɡæp/', cn: 'n. 差距；间隔', ex: 'The gap between theory and practice is often wide.', exZh: '理论与实践之间的差距往往很大。' },
+    'generalizes':   { ipa: '/ˈdʒenrəlaɪzɪz/', cn: 'v. 泛化（generalize 的第三人称单数）', ex: 'A model that generalizes still works on unseen data.', exZh: '一个能泛化的模型，在没见过的数据上依然有效。' },
+    'robustness':    { ipa: '/rəʊˈbʌstnəs/', cn: 'n. 鲁棒性；稳健性', ex: 'Robustness is what keeps a system working when conditions change.', exZh: '鲁棒性就是条件变化时系统仍能工作的能力。' },
+    'transparency':  { ipa: '/trænsˈpærənsi/', cn: 'n. 透明性；可解释性', ex: 'Safety rules often demand more transparency than performance.', exZh: '安全规范常常要求更高的透明性，而不是更强的性能。' }
+  },
+  quiz: [
+    { q: 'Why are the robots trained in simulation rather than in the real world?',
+      options: ['Because simulation is always more accurate than reality.',
+                'Because thousands of randomized trials can be run quickly and safely at low cost.',
+                'Because real robots cannot walk at all.'],
+      answer: 1,
+      why: '文中说成千上万个仿真副本被投放到随机地形中训练——靠的就是规模大、成本低、不怕摔。' },
+    { q: 'What is the “real trade” the author describes?',
+      options: ['Speed against accuracy.', 'Robustness against transparency.', 'Cost against safety.'],
+      answer: 1,
+      why: '原文："we gain robustness and we lose transparency"——变得更能适应变化，但也更难解释。' }
+  ]
+}
+
+]; // ← ARTICLES 结束，新增文章请加在这一行之前
+
+/* ============================================================================
+   §6  状态与工具函数
+   ========================================================================== */
+
+/* --- localStorage 读写（前缀 dr.，清缓存即清数据） --- */
+const DB = {
+  get(k, def){
+    try{ const v = localStorage.getItem('dr.' + k); return v === null ? def : JSON.parse(v); }
+    catch(e){ return def; }
+  },
+  set(k, v){
+    try{ localStorage.setItem('dr.' + k, JSON.stringify(v)); }catch(e){}
+  },
+  clearAll(){
+    Object.keys(localStorage).filter(k => k.indexOf('dr.') === 0).forEach(k => localStorage.removeItem(k));
+  }
+};
+
+const state = {
+  view: 'read',
+  current: ARTICLES[0].id,
+  mode: DB.get('mode', 'both'),          // both | en
+  font: DB.get('font', 19),
+  theme: DB.get('theme', 'auto'),        // auto | light | dark
+  readIds: DB.get('readIds', []),        // 已读文章 id
+  logDays: DB.get('logDays', []),        // 学习过的日期（打卡）
+  mastered: DB.get('mastered', []),      // 已掌握单词
+  wbDate: 'all',
+  wbShuffle: false,
+  wbHide: DB.get('wbHide', false),
+  order: null,
+  quizPicked: {},                        // 当前文章的作答记录
+  quizShown: false
+};
+
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+/* 去掉 {{}} 标记，得到纯文本（统计词数、朗读用） */
+const plain = s => s.replace(/\{\{([^}]+)\}\}/g, '$1');
+/* 把 {{word}} 转成可点击的加粗下划线标签 */
+const mark  = s => s.replace(/\{\{([^}]+)\}\}/g, (m, w) => `<b class="w" data-w="${w}" tabindex="0">${w}</b>`);
+
+const todayStr = () => {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
+const getArticle = id => ARTICLES.find(a => a.id === id) || ARTICLES[0];
+const wordCount = a => a.body.filter(s => s.en)
+  .reduce((n, s) => n + plain(s.en).split(/\s+/).filter(Boolean).length, 0);
+const readMinutes = a => Math.max(1, Math.round(wordCount(a) / CONFIG.wordsPerMinute));
+
+/* 插图 / 说明卡：正文数组里的非句子元素 */
+const figHTML = id => {
+  const f = FIGURES[id];
+  if (!f) return '';
+  return `<figure class="fig">
+    <div class="fig-head"><b>${f.head}</b><span>${f.note || ''}</span></div>
+    <div class="fig-scroll">${f.svg}</div>
+    <figcaption class="fig-cap">${f.caption}</figcaption>
+  </figure>`;
+};
+const noteHTML = n => `<aside class="callout">
+    <p class="cl">Why it matters</p>
+    <p class="ce">${n.en}</p>
+    <p class="cz">${n.zh}</p>
+  </aside>`;
+
+/* 朗读队列：只取真正的句子，跳过插图与说明卡 */
+const speakQueue = a => a.body
+  .map((s, i) => s.en ? { text: plain(s.en), el: $('.sent[data-i="' + i + '"]') } : null)
+  .filter(Boolean);
+
+/* 全站重点词聚合（同一个词出现在多篇文章里会合并，保留最近一次释义） */
+function allWords(){
+  const map = new Map();
+  ARTICLES.forEach(a => {
+    Object.keys(a.words).forEach(w => {
+      const k = w.toLowerCase();
+      if (!map.has(k)) map.set(k, Object.assign({ word: w, dates: [a.date] }, a.words[w]));
+      else { const o = map.get(k); if (!o.dates.includes(a.date)) o.dates.push(a.date); }
+    });
+  });
+  return Array.from(map.values()).sort((x, y) => x.word.localeCompare(y.word));
+}
+
+/* 连续学习天数 */
+function streak(){
+  if (!state.logDays.length) return 0;
+  const set = new Set(state.logDays);
+  const back = (d, n) => { const x = new Date(d + 'T00:00:00'); x.setDate(x.getDate() - n); 
+    const p = v => String(v).padStart(2, '0');
+    return `${x.getFullYear()}-${p(x.getMonth() + 1)}-${p(x.getDate())}`; };
+  let cursor = todayStr();
+  if (!set.has(cursor)){
+    cursor = back(cursor, 1);
+    if (!set.has(cursor)) return 0;
+  }
+  let n = 0;
+  while (set.has(cursor)) { n++; cursor = back(cursor, 1); }
+  return n;
+}
+
+/* --- 主题 --- */
+function applyTheme(){
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const real = state.theme === 'auto' ? (mq.matches ? 'dark' : 'light') : state.theme;
+  document.documentElement.dataset.theme = real;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', real === 'dark' ? '#0e0f11' : '#faf9f6');
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (state.theme === 'auto') applyTheme();
+});
+
+/* --- 朗读（Web Speech API） --- */
+const TTS = {
+  token: 0,
+  voice: null,
+  ready(){
+    if (!('speechSynthesis' in window)) return false;
+    const vs = speechSynthesis.getVoices();
+    this.voice = vs.find(v => /en-US/i.test(v.lang) && /Google|Samantha|Jenny|Aria|Microsoft/i.test(v.name))
+               || vs.find(v => /^en/i.test(v.lang)) || null;
+    return true;
+  },
+  stop(){
+    this.token++;
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    $$('.sent.now').forEach(e => e.classList.remove('now'));
+    const b = $('#btnSpeakAll');
+    if (b) { b.classList.remove('on'); b.dataset.on = ''; b.querySelector('.txt').textContent = '朗读全文'; }
+  },
+  play(list){
+    if (!this.ready()) { alert('当前浏览器不支持语音朗读，建议使用 Chrome / Edge。'); return; }
+    const token = ++this.token;
+    speechSynthesis.cancel();   // 先掐掉上一条，避免排队叠加
+    let i = 0;
+    const step = () => {
+      if (token !== this.token) return;
+      if (i >= list.length) { this.stop(); return; }
+      const item = list[i];
+      $$('.sent.now').forEach(e => e.classList.remove('now'));
+      if (item.el) {
+        item.el.classList.add('now');
+        const r = item.el.getBoundingClientRect();
+        if (r.top < 70 || r.bottom > window.innerHeight - 90)
+          item.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      const u = new SpeechSynthesisUtterance(item.text);
+      u.lang = 'en-US';
+      u.rate = 0.93;
+      if (this.voice) u.voice = this.voice;
+      u.onend = () => { i++; setTimeout(step, 80); };
+      u.onerror = () => { if (token === this.token) this.stop(); };
+      speechSynthesis.speak(u);
+    };
+    step();
+  }
+};
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => TTS.ready();
+
+/* ============================================================================
+   §7  视图渲染
+   ========================================================================== */
+
+/* ---------------------------- 阅读视图 ---------------------------- */
+function renderRead(id){
+  const a = getArticle(id);
+  state.current = a.id;
+  state.quizPicked = {};
+  state.quizShown = false;
+
+  // 记录已读 + 打卡
+  if (!state.readIds.includes(a.id)) { state.readIds.push(a.id); DB.set('readIds', state.readIds); }
+  const t = todayStr();
+  if (!state.logDays.includes(t)) { state.logDays.push(t); DB.set('logDays', state.logDays); }
+
+  const idx = ARTICLES.findIndex(x => x.id === a.id);
+  const prev = ARTICLES[idx - 1];   // 更旧
+  const next = ARTICLES[idx + 1];   // 更新
+  // 重点词按在正文中出现的先后顺序排列（而不是 key 的顺序）
+  const words = Array.from(new Set(
+    a.body.map(s => s.en).join(' ').match(/\{\{([^}]+)\}\}/g) || []
+  )).map(m => m.slice(2, -2));
+
+  const sents = a.body.map((s, i) => {
+    if (s.fig)  return figHTML(s.fig);
+    if (s.note) return noteHTML(s.note);
+    return `
+    <div class="sent" data-i="${i}">
+      <div class="en">${mark(s.en)}</div>
+      <div class="zh">${s.zh}</div>
+      <button class="spk" data-speak="${i}" title="朗读这一句" aria-label="朗读这一句">
+        <svg viewBox="0 0 24 24"><path d="M4 9.5h3.2L12 5.2v13.6L7.2 14.5H4z"/><path d="M16 8.4a5.2 5.2 0 0 1 0 7.2"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+
+  $('#view-read').innerHTML = `
+    <div class="art-head">
+      <div class="meta">
+        <span class="tag">${a.topic}</span>
+        <time>${a.date} · ${weekdayOf(a.date)}</time>
+      </div>
+      <h1 class="art-title">${a.title}</h1>
+      ${a.subtitle ? `<p class="art-sub">${a.subtitle}</p>` : ''}
+      <div class="statbar">
+        <span><b>${a.level}</b></span><span class="dot"></span>
+        <span><b>${wordCount(a)}</b> 词</span><span class="dot"></span>
+        <span>约 <b>${readMinutes(a)}</b> 分钟</span><span class="dot"></span>
+        <span><b>${words.length}</b> 个重点词</span><span class="dot"></span>
+        <span><b>${a.quiz.length}</b> 道理解题</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="seg" id="modeSeg">
+        <button data-mode="both" class="${state.mode === 'both' ? 'on' : ''}">英中对照</button>
+        <button data-mode="en" class="${state.mode === 'en' ? 'on' : ''}">只看英文</button>
+      </div>
+      <button class="btn" id="btnSpeakAll" data-on="">
+        <svg viewBox="0 0 24 24"><path d="M4 9.5h3.2L12 5.2v13.6L7.2 14.5H4z"/><path d="M16 8.4a5.2 5.2 0 0 1 0 7.2"/><path d="M18.6 5.8a8.5 8.5 0 0 1 0 12.4"/></svg>
+        <span class="txt">朗读全文</span>
+      </button>
+    </div>
+
+    <div class="reading ${state.mode === 'en' ? 'only-en' : ''}" id="reading">${sents}</div>
+
+    <div class="wordstrip">
+      <p class="strip-label">Key words in this passage</p>
+      <div class="chips">
+        ${words.map(w => `<button class="chip" data-w="${w}">${w}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-head">
+        <h3>Check your reading</h3>
+        <span>${a.quiz.length} 题 · 点击选项即可判分</span>
+      </div>
+      <div id="quizList">
+        ${a.quiz.map((q, qi) => `
+          <div class="q" data-q="${qi}">
+            <p class="qtext"><b>${qi + 1}.</b>${q.q}</p>
+            <div class="opts">
+              ${q.options.map((o, oi) => `
+                <button class="opt" data-q="${qi}" data-o="${oi}">
+                  <span class="k">${'ABCD'[oi]}</span>${o}
+                </button>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="pager">
+      <a href="#" class="${prev ? '' : 'dis'}" data-open="${prev ? prev.id : ''}">
+        <span class="lbl">← 更早一篇</span>
+        <span class="tt">${prev ? prev.title : '已经是第一篇'}</span>
+      </a>
+      <a href="#" class="next ${next ? '' : 'dis'}" data-open="${next ? next.id : ''}">
+        <span class="lbl">更新一篇 →</span>
+        <span class="tt">${next ? next.title : '已经是最新'}</span>
+      </a>
+    </div>
+  `;
+}
+
+function weekdayOf(d){
+  const map = ['周日','周一','周二','周三','周四','周五','周六'];
+  return map[new Date(d + 'T00:00:00').getDay()] || '';
+}
+
+/* ---------------------------- 单词本 ---------------------------- */
+function renderWords(){
+  let list = allWords();
+
+  // 按日期筛选
+  if (state.wbDate !== 'all') {
+    const d = state.wbDate;
+    list = list.filter(w => w.dates.includes(d));
+  }
+  // 乱序（只打乱一次，靠 state.order 记住结果，避免每次重绘都变）
+  if (state.wbShuffle) {
+    if (!state.order) {
+      state.order = list.map(w => w.word);
+      for (let i = state.order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [state.order[i], state.order[j]] = [state.order[j], state.order[i]];
+      }
+    }
+    const rank = new Map(state.order.map((w, i) => [w.toLowerCase(), i]));
+    list.sort((x, y) => (rank.get(x.word.toLowerCase()) ?? 0) - (rank.get(y.word.toLowerCase()) ?? 0));
+  }
+
+  const dates = Array.from(new Set(allWords().flatMap(w => w.dates))).sort().reverse();
+
+  $('#view-words').innerHTML = `
+    <div class="page-head">
+      <h2>单词本</h2>
+      <p>自动收录每一篇推文里标记过的重点词，共 ${allWords().length} 个，其中 ${state.mastered.length} 个已掌握。</p>
+    </div>
+
+    <div class="wb-bar">
+      <select class="sel" id="wbDate">
+        <option value="all">全部日期</option>
+        ${dates.map(d => {
+          const ar = ARTICLES.find(a => a.date === d) || {};
+          return `<option value="${d}" ${state.wbDate === d ? 'selected' : ''}>${d} · ${ar.topic || ''}</option>`;
+        }).join('')}
+      </select>
+      <button class="btn" id="wbShuffle">${state.wbShuffle ? '恢复顺序' : '刷新顺序'}</button>
+      <button class="btn ${state.wbHide ? 'on' : ''}" id="wbHide">${state.wbHide ? '显示释义' : '隐藏释义'}</button>
+      <span class="wb-count">${list.length} 个</span>
+    </div>
+
+    ${list.length ? `
+    <div class="wb-list ${state.wbHide ? 'hide' : ''}" id="wbList">
+      ${list.map(w => {
+        const done = state.mastered.includes(w.word);
+        return `<div class="wb-row ${done ? 'done' : ''}" data-w="${w.word}">
+          <div class="wb-word"><i>${w.word}</i><small>${w.ipa}</small></div>
+          <div class="wb-cn">${w.cn}</div>
+          <span class="wb-date">${w.dates[0].slice(5)}</span>
+          <button class="wb-done" title="标记已掌握">
+            <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+        </div>`;
+      }).join('')}
+    </div>` : `<div class="empty">这一天还没有标记过的单词</div>`}
+  `;
+}
+
+/* ---------------------------- 历史归档 ---------------------------- */
+function renderHistory(){
+  const list = ARTICLES.slice().sort((a, b) => b.date.localeCompare(a.date));
+  $('#view-history').innerHTML = `
+    <div class="page-head">
+      <h2>历史归档</h2>
+      <p>共 ${ARTICLES.length} 篇，已读 ${state.readIds.length} 篇。按日期倒序排列。</p>
+    </div>
+    <div class="hist-list">
+      ${list.map(a => `
+        <a class="hist-card" href="#" data-open="${a.id}">
+          <div class="hist-top">
+            <span class="tag">${a.topic}</span>
+            <time>${a.date}</time>
+            ${state.readIds.includes(a.id) ? '<span class="badge-read">已读</span>' : ''}
+          </div>
+          <h3>${a.title}</h3>
+          <p>${a.subtitle || ''} · ${wordCount(a)} 词 · 约 ${readMinutes(a)} 分钟 · ${Object.keys(a.words).length} 个重点词</p>
+        </a>`).join('')}
+    </div>
+    <p class="note" style="margin-top:24px">新增文章后会自动出现在这里，不需要额外维护。</p>
+  `;
+}
+
+/* ---------------------------- 设置 ---------------------------- */
+function renderSettings(){
+  const totalWords = allWords().length;
+  $('#view-settings').innerHTML = `
+    <div class="page-head">
+      <h2>设置</h2>
+      <p>阅读偏好与学习记录都保存在本机浏览器，不会上传。</p>
+    </div>
+
+    <div class="set-group">
+      <div class="set-row">
+        <div class="set-label"><b>外观</b><span>深色模式适合夜间长时间阅读</span></div>
+        <div class="set-ctl">
+          <div class="seg" id="themeSeg">
+            <button data-theme="light" class="${state.theme === 'light' ? 'on' : ''}">浅色</button>
+            <button data-theme="dark"  class="${state.theme === 'dark' ? 'on' : ''}">深色</button>
+            <button data-theme="auto"  class="${state.theme === 'auto' ? 'on' : ''}">跟随系统</button>
+          </div>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="set-label"><b>正文字号</b><span>英文正文的显示大小</span></div>
+        <div class="set-ctl">
+          <div class="seg" id="fontSeg">
+            <button data-fs="17" class="${state.font === 17 ? 'on' : ''}">小</button>
+            <button data-fs="19" class="${state.font === 19 ? 'on' : ''}">中</button>
+            <button data-fs="21" class="${state.font === 21 ? 'on' : ''}">大</button>
+          </div>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="set-label"><b>默认阅读模式</b><span>英中对照，或先只看英文自测理解</span></div>
+        <div class="set-ctl">
+          <div class="seg" id="modeSetSeg">
+            <button data-mode="both" class="${state.mode === 'both' ? 'on' : ''}">对照</button>
+            <button data-mode="en"   class="${state.mode === 'en' ? 'on' : ''}">纯英文</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="set-group">
+      <div class="stat-grid">
+        <div class="stat-cell"><b>${state.readIds.length}</b><span>已读篇数</span></div>
+        <div class="stat-cell"><b>${state.mastered.length}/${totalWords}</b><span>掌握生词</span></div>
+        <div class="stat-cell"><b>${streak()}</b><span>连续天数</span></div>
+      </div>
+    </div>
+
+    <div class="set-group">
+      <div class="set-row">
+        <div class="set-label"><b>清空学习记录</b><span>已读、单词掌握状态、偏好设置全部重置</span></div>
+        <div class="set-ctl"><button class="btn danger" id="btnReset">清空</button></div>
+      </div>
+    </div>
+
+    <p class="note">
+      交互提示：在底部导航栏上横向滑动（或者按住那颗玻璃球拖），四个页面会跟着实时横移——拖到两页中间，页面就停在中间；松手自动吸附到最近的一页。竖向滑动仍然是滚动页面。<br>
+      朗读功能使用浏览器内置的语音合成，推荐 Chrome / Edge；离线可用，但不同系统的发音略有差异。<br>
+      每天新增文章：编辑本文件里的 <code>ARTICLES</code> 数组，把新文章插到最前面即可。
+    </p>
+  `;
+}
+
+/* ============================================================================
+   §8  视图切换与事件
+   ========================================================================== */
+function show(view, opts = {}){
+  const to = VIEW_ORDER.indexOf(view);
+  if (to < 0) return;
+
+  // 从历史/翻页进入另一篇文章：重渲染阅读页，滚动归零
+  if (view === 'read' && opts.id){
+    const id = getArticle(opts.id).id;
+    if (id !== state.current){
+      state.current = id;
+      renderView('read');
+      scrollMemo.read = 0;
+    }
+  }
+
+  // 离开当前页时记住滚动位置（每页各自记忆）
+  if (state.view !== view) scrollMemo[state.view] = window.scrollY;
+
+  // 其余三页内容轻，每次进入都刷一遍，保证统计数字是最新的；
+  // 阅读页只在换文章时重渲染，免得把做题状态清掉
+  if (view !== 'read') renderView(view);
+
+  state.view = view;
+
+  springP(to, () => {
+    window.scrollTo(0, scrollMemo[view] || 0);
+    if (opts.done) opts.done();
+  });
+}
+
+/* ---------------------------------------------------------------------------
+   页面滑轨 + 底部玻璃球
+   ---------------------------------------------------------------------------
+   四个页面并排放在同一条滑轨上，位置用 p 表示：0=每日阅读 1=单词本 2=历史 3=设置。
+   p 允许是小数——拖到 1.4 就停在两页之间。页面位移、舞台高度、玻璃球位置
+   全部由同一个 p 算出来，所以不会出现"球动了页面没跟上"的错位。
+   --------------------------------------------------------------------------- */
+const dockEl = $('#dock');
+const dockItems = () => Array.from(dockEl.querySelectorAll('.dock-item'));
+
+const VIEW_ORDER = ['read', 'words', 'history', 'settings'];
+const stageEl = $('#stage');
+const viewEl  = name => $('#view-' + name);
+const scrollMemo = {};            // 每页各自的滚动位置
+let heights = [0, 0, 0, 0];       // 每页内容高度，只在渲染/尺寸变化时重测
+let pNow = 0;                     // 当前页位置
+let pToken = 0;                   // 用来打断上一次动画
+
+function setBall(x, w){
+  const ind = $('#dockInd');
+  if (!ind) return;
+  ind.style.width = w + 'px';
+  ind.style.transform = `translateX(${x}px)`;
+}
+
+/* 重测四页高度（触发一次同步布局，只在必要时调用） */
+function measureStage(){
+  heights = VIEW_ORDER.map(n => viewEl(n).offsetHeight || 0);
+}
+
+/* 渲染某一页 → 重测高度 → 按当前 p 重排 */
+function renderView(name){
+  if (name === 'read')          renderRead(state.current);
+  else if (name === 'words')    renderWords();
+  else if (name === 'history')  renderHistory();
+  else if (name === 'settings') renderSettings();
+  measureStage();
+  setProgress(pNow);
+}
+
+/* 核心：p → 四页位移 / 舞台高度 / 玻璃球 / 选中态 */
+let lastDockK = -1;
+function setProgress(p){
+  pNow = p;
+  const last = VIEW_ORDER.length - 1;
+
+  VIEW_ORDER.forEach((name, i) => {
+    const el = viewEl(name);
+    if (!el) return;
+    const d = i - p;
+    el.style.transform = `translate3d(${(d * 100).toFixed(3)}%,0,0)`;
+    const vis = Math.abs(d) > 1.02 ? 'hidden' : '';   // 完全在屏外的先不画
+    if (el.style.visibility !== vis) el.style.visibility = vis;
+  });
+
+  // 页高取相邻两页中较大的那个：只在跨页时变一次，
+  // 不像插值那样每帧都要重排文档（手机上的主要卡顿来源之一）
+  const i0 = Math.max(0, Math.min(last, Math.floor(p)));
+  const i1 = Math.min(last, i0 + 1);
+  const h  = Math.max(heights[i0] || 0, heights[i1] || 0);
+  if (Math.abs((parseFloat(stageEl.style.height) || 0) - h) > 1){
+    stageEl.style.height = h + 'px';
+  }
+
+  // 玻璃球：位置同样由 p 决定，和页面严格同步
+  const items = dockItems();
+  if (items.length === VIEW_ORDER.length){
+    const minX = items[0].offsetLeft;
+    const maxX = items[items.length - 1].offsetLeft;
+    setBall(minX + (maxX - minX) * (p / last), items[0].offsetWidth);
+
+    const k = Math.round(p);
+    if (k !== lastDockK){                 // 选中态只在跨页时改一次
+      lastDockK = k;
+      items.forEach((b, i) => {
+        const on = i === k;
+        b.classList.toggle('on', on);
+        if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      });
+    }
+  }
+}
+
+/* 临界阻尼弹簧，response≈0.34s，从当前 p 滑到目标页 */
+const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function springP(to, done){
+  const token = ++pToken;
+  if (REDUCE_MOTION || Math.abs(to - pNow) < 0.0005){ setProgress(to); done && done(); return; }
+
+  const omega = 2 * Math.PI / 0.34;
+  let x = pNow, v = 0;
+  let last = performance.now();
+
+  const tick = now => {
+    if (token !== pToken) return;
+    const dt = Math.min((now - last) / 1000, 1 / 30);
+    last = now;
+    const h = dt / 4;
+    for (let i = 0; i < 4; i++){          // 四个子步长，数值稳定
+      v += (-omega * omega * (x - to) - 2 * omega * v) * h;
+      x += v * h;
+    }
+    setProgress(x);
+    if (Math.abs(x - to) < 0.002 && Math.abs(v) < 0.02){
+      setProgress(to);
+      done && done();
+      return;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ---------------------------------------------------------------------------
+   拖动玻璃球
+   ---------------------------------------------------------------------------
+   不再要求长按——长按在手机上很容易被系统的长按菜单/指针取消打断，
+   改动后只要横向手势成立（|dx| > 6 且比竖向更明显）就立刻接管。
+   竖向手势不拦，页面照常滚动（触摸端 touch-action:pan-y）。
+   --------------------------------------------------------------------------- */
+let ballDrag = null;
+let suppressDockClick = false;
+
+function ballStart(e){
+  const items = dockItems();
+  if (items.length !== VIEW_ORDER.length) return;
+
+  const r = dockEl.getBoundingClientRect();
+  const minX = items[0].offsetLeft;
+  const maxX = items[items.length - 1].offsetLeft;
+  const ballX = minX + (maxX - minX) * (pNow / (VIEW_ORDER.length - 1));
+
+  ballDrag = {
+    id: e.pointerId,
+    ready: false,
+    w: items[0].offsetWidth,
+    grab: e.clientX - (r.left + ballX),   // 按相对位移拖，球不会跳到手指下
+    sx: e.clientX, sy: e.clientY,
+    lift(){
+      if (!ballDrag) return;
+      ballDrag.ready = true;
+      dockEl.classList.add('balling');
+    }
+  };
+}
+
+function ballMove(e){
+  if (!ballDrag || e.pointerId !== ballDrag.id) return;
+
+  const dx = e.clientX - ballDrag.sx;
+  const dy = e.clientY - ballDrag.sy;
+
+  if (!ballDrag.ready){
+    if (Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy)){
+      ballDrag.lift();                    // 横向意图成立，接管
+    } else if (Math.abs(dy) > 8){
+      ballDrag = null;                    // 竖向手势，交还给页面滚动
+      return;
+    } else {
+      return;
+    }
+  }
+
+  const items = dockItems();
+  const r = dockEl.getBoundingClientRect();
+  const minX = items[0].offsetLeft;
+  const maxX = items[items.length - 1].offsetLeft;
+  let x = e.clientX - r.left - ballDrag.grab;
+  x = Math.max(minX, Math.min(maxX, x));
+
+  // 球的位置反推页位置 → 页面实时横移
+  setProgress((x - minX) / (maxX - minX) * (VIEW_ORDER.length - 1));
+}
+
+function ballEnd(e, cancelled){
+  if (!ballDrag || e.pointerId !== ballDrag.id) return;
+  const st = ballDrag;
+  ballDrag = null;
+
+  const pressed = $('.dock-item.press');
+  if (pressed) pressed.classList.remove('press');
+  if (!st.ready) return;                  // 没拖动 → 就是普通点击，交给 click
+
+  suppressDockClick = true;
+  setTimeout(() => { suppressDockClick = false; }, 80);
+
+  const k = Math.min(VIEW_ORDER.length - 1, Math.max(0, Math.round(pNow)));
+  show(VIEW_ORDER[k], { done: () => dockEl.classList.remove('balling') });
+}
+
+dockEl.addEventListener('pointerdown', e => {
+  const item = e.target.closest('.dock-item');
+  if (!item) return;
+  item.classList.add('press');       // 按下即反馈，不等抬起
+  ballStart(e);                      // 任意一格都能起手，球按相对位移跟随
+});
+
+window.addEventListener('pointermove', ballMove);
+window.addEventListener('pointerup', e => {
+  const p = $('.dock-item.press');
+  if (p) p.classList.remove('press');
+  ballEnd(e, false);
+});
+window.addEventListener('pointercancel', e => ballEnd(e, true));
+
+/* 拖完那一次 click 要吃掉，否则会误触发一次切换 */
+dockEl.addEventListener('click', e => {
+  if (suppressDockClick){ e.preventDefault(); e.stopPropagation(); }
+}, true);
+
+/* ---------------------------------------------------------------------------
+   液态玻璃折射层
+   ---------------------------------------------------------------------------
+   思路来自 liquid-glass-react：三通道 feDisplacementMap + 屏幕混合做色散；
+   法线图按 rxing365 WebGL 仓库 README 的优化建议，用 Canvas 预计算成一张图，
+   再由 SVG 滤镜消费，省掉运行时 WebGL。
+   只有 Chromium 认 backdrop-filter: url()，其他浏览器整条声明被丢弃，
+   折射层保持透明，磨砂层照常工作。
+   --------------------------------------------------------------------------- */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function buildNormalMap(w, h){
+  // 平滑渐变，用一半左右的分辨率即可
+  const k = Math.min(1, 420 / w);
+  const W = Math.max(8, Math.round(w * k));
+  const H = Math.max(8, Math.round(h * k));
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  if (!ctx) return null;
+
+  const img = ctx.createImageData(W, H);
+  const data = img.data;
+  const r  = H / 2;                       // 胶囊圆角 = 高度的一半
+  const edge = Math.max(5, Math.min(H * 0.36, 23 * k));  // 边缘折射带宽度
+  const cx = W / 2, cy = H / 2, hw = W / 2, hh = H / 2;
+
+  // 圆角矩形有符号距离场：内部为负，外部为正
+  const sd = (x, y) => {
+    const qx = Math.abs(x - cx) - (hw - r);
+    const qy = Math.abs(y - cy) - (hh - r);
+    const ax = Math.max(qx, 0), ay = Math.max(qy, 0);
+    return Math.hypot(ax, ay) + Math.min(Math.max(qx, qy), 0) - r;
+  };
+
+  for (let y = 0; y < H; y++){
+    for (let x = 0; x < W; x++){
+      const depth = -sd(x + 0.5, y + 0.5);
+      let t = 1 - depth / edge;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;      // 边缘 = 1，中心 = 0
+
+      let nx = 0, ny = 0;
+      if (t > 0){
+        const e = 1.5;
+        const gx = sd(x + e, y) - sd(x - e, y);
+        const gy = sd(x, y + e) - sd(x, y - e);
+        const len = Math.hypot(gx, gy) || 1;
+        nx = gx / len; ny = gy / len;     // 指向外侧的法线
+      }
+      const i = (y * W + x) * 4;
+      data[i]     = 128 + 127 * t * nx;   // R → X 位移
+      data[i + 1] = 255 * t;              // G → 边缘遮罩（透明度）
+      data[i + 2] = 128 + 127 * t * ny;   // B → Y 位移
+      data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return cv.toDataURL('image/png');
+}
+
+let lensSize = '';
+function installLens(){
+  const lens = $('#dockLens');
+  const W = dockEl.offsetWidth, H = dockEl.offsetHeight;
+  if (!W || !H) return;
+
+  // 触屏设备上 SVG 滤镜太贵，CSS 里已经关了折射层，这里直接不生成
+  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches){
+    if (lens) lens.style.display = 'none';
+    dockEl.classList.add('no-lens');
+    return;
+  }
+
+  const CS = window.CSS;
+  const supported = !!(CS && CS.supports &&
+    (CS.supports('backdrop-filter', 'url(#lgRefract)') ||
+     CS.supports('-webkit-backdrop-filter', 'url(#lgRefract)')));
+  if (!supported){                       // Safari / Firefox 没有折射，退回轻磨砂
+    if (lens) lens.style.display = 'none';
+    dockEl.classList.add('no-lens');
+    return;
+  }
+  dockEl.classList.remove('no-lens');
+
+  const key = W + 'x' + H;
+  if (key === lensSize) return;
+  lensSize = key;
+
+  const map = buildNormalMap(W, H);
+  if (!map) return;
+
+  let svg = $('#lgSvg');
+  if (!svg){
+    svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('id', 'lgSvg');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+    document.body.appendChild(svg);
+  }
+
+  const s  = -19;      // 位移强度：-10 很淡，-30 明显
+  const s2 = s * 0.90; // 绿通道
+  const s3 = s * 0.80; // 蓝通道，三者错开就是色散
+
+  svg.innerHTML = `<defs>
+    <filter id="lgRefract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feImage href="${map}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="MAP"/>
+
+      <feColorMatrix in="MAP" type="matrix"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 1 0 0 0" result="EDGE_I"/>
+      <feComponentTransfer in="EDGE_I" result="EDGE_MASK">
+        <feFuncA type="table" tableValues="0 1"/>
+      </feComponentTransfer>
+
+      <feOffset in="SourceGraphic" dx="0" dy="0" result="CENTER"/>
+
+      <feDisplacementMap in="SourceGraphic" in2="MAP" scale="${s}"  xChannelSelector="R" yChannelSelector="B" result="RD"/>
+      <feColorMatrix in="RD" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="RC"/>
+      <feDisplacementMap in="SourceGraphic" in2="MAP" scale="${s2}" xChannelSelector="R" yChannelSelector="B" result="GD"/>
+      <feColorMatrix in="GD" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="GC"/>
+      <feDisplacementMap in="SourceGraphic" in2="MAP" scale="${s3}" xChannelSelector="R" yChannelSelector="B" result="BD"/>
+      <feColorMatrix in="BD" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="BC"/>
+
+      <feBlend in="GC" in2="BC" mode="screen" result="GB"/>
+      <feBlend in="RC" in2="GB" mode="screen" result="RGB"/>
+      <feGaussianBlur in="RGB" stdDeviation="0.4" result="AB"/>
+      <feComposite in="AB" in2="EDGE_MASK" operator="in" result="EDGE_AB"/>
+
+      <feComponentTransfer in="EDGE_MASK" result="INV">
+        <feFuncA type="table" tableValues="1 0"/>
+      </feComponentTransfer>
+      <feComposite in="CENTER" in2="INV" operator="in" result="CENTER_CLEAN"/>
+      <feComposite in="EDGE_AB" in2="CENTER_CLEAN" operator="over"/>
+    </filter>
+  </defs>`;
+}
+
+/* 尺寸变化：重算位置 + 重建法线图（放大会导致拖影） */
+let dockResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(dockResizeTimer);
+  dockResizeTimer = setTimeout(() => {
+    measureStage();          // 宽度变了，四页都会重新折行
+    setProgress(pNow);
+    installLens();
+  }, 150);
+});
+
+/* --- 查词弹窗 --- */
+function showTip(word, anchorEl){
+  const a = getArticle(state.current);
+  const info = a.words[word] || Object.assign({}, allWords().find(w => w.word.toLowerCase() === word.toLowerCase()));
+  const tip = $('#tip');
+  if (!info || !info.cn) return;
+
+  tip.innerHTML = `
+    <div class="tw">${word}</div>
+    <div class="ipa">${info.ipa || ''}</div>
+    <div class="cn">${info.cn}</div>
+    <div class="ex">${info.ex || ''}</div>
+    <div class="exzh">${info.exZh || ''}</div>
+  `;
+  tip.hidden = false;
+
+  // 定位：优先显示在词的上方，空间不够则放到下方；左右不越界
+  const r = anchorEl.getBoundingClientRect();
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let left = r.left + r.width / 2 - tw / 2;
+  left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
+  let top = r.top - th - 10;
+  if (top < 12) top = r.bottom + 10;
+  top = Math.min(top, window.innerHeight - th - 12);
+
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';}
+function hideTip(){ $('#tip').hidden = true; }
+
+/* --- 清词，重新绑定（因为视图是整块重建的） --- */
+document.addEventListener('click', e => {
+  // 1) 底部导航
+  const dockBtn = e.target.closest('.dock-item');
+  if (dockBtn) { show(dockBtn.dataset.view); return; }
+
+  // 2) 品牌回到首页
+  const go = e.target.closest('[data-go]');
+  if (go) { e.preventDefault(); show(go.dataset.go); return; }
+
+  // 3) 打开某篇文章
+  const open = e.target.closest('[data-open]');
+  if (open) {
+    e.preventDefault();
+    const id = open.dataset.open;
+    if (id) show('read', { id });
+    return;
+  }
+
+  // 4) 点击重点词 / 词条 chip → 弹窗
+  const w = e.target.closest('.w, .chip');
+  if (w) {
+    e.stopPropagation();
+    showTip(w.dataset.w, w);
+    return;
+  }
+
+  // 5) 单句朗读
+  const spk = e.target.closest('.spk');
+  if (spk) {
+    e.stopPropagation();
+    const i = Number(spk.dataset.speak);
+    const a = getArticle(state.current);
+    TTS.play([{ text: plain(a.body[i].en), el: $('.sent[data-i="' + i + '"]') }]);
+    return;
+  }
+
+  // 6) 阅读模式切换
+  const modeBtn = e.target.closest('#modeSeg button');
+  if (modeBtn) {
+    state.mode = modeBtn.dataset.mode;
+    DB.set('mode', state.mode);
+    $$('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.mode === state.mode));
+    $('#reading').classList.toggle('only-en', state.mode === 'en');
+    return;
+  }
+
+  // 7) 朗读全文 / 停止
+  const spkAll = e.target.closest('#btnSpeakAll');
+  if (spkAll) {
+    const on = spkAll.dataset.on === '1';
+    if (on) { TTS.stop(); return; }
+    const a = getArticle(state.current);
+    spkAll.dataset.on = '1';
+    spkAll.classList.add('on');
+    spkAll.querySelector('.txt').textContent = '停止朗读';
+    TTS.play(speakQueue(a));
+    return;
+  }
+
+  // 8) 理解题作答
+  const opt = e.target.closest('.opt');
+  if (opt) {
+    const qi = Number(opt.dataset.q), oi = Number(opt.dataset.o);
+    const a = getArticle(state.current);
+    const box = opt.closest('.q');
+    if (box.dataset.done === '1') return;
+    box.dataset.done = '1';
+    $$('.opt', box).forEach(b => {
+      const bOi = Number(b.dataset.o);
+      if (bOi === a.quiz[qi].answer) b.classList.add('right');
+      else if (bOi === oi) b.classList.add('wrong');
+    });
+    const ans = document.createElement('div');
+    ans.className = 'answer';
+    ans.innerHTML = `<b>解析：</b>${a.quiz[qi].why}`;
+    box.appendChild(ans);
+    return;
+  }
+
+  // 9) 单词本：日期筛选 / 乱序 / 隐藏释义 / 已掌握
+  const dateSel = e.target.closest('#wbDate');
+  if (dateSel) return; // select 用 change 事件
+
+  if (e.target.closest('#wbShuffle')) {
+    state.wbShuffle = !state.wbShuffle;
+    state.order = null;
+    renderView('words');
+    return;
+  }
+  if (e.target.closest('#wbHide')) {
+    state.wbHide = !state.wbHide;
+    DB.set('wbHide', state.wbHide);
+    renderView('words');
+    return;
+  }
+  const doneBtn = e.target.closest('.wb-done');
+  if (doneBtn) {
+    const word = doneBtn.closest('.wb-row').dataset.w;
+    const i = state.mastered.indexOf(word);
+    if (i >= 0) state.mastered.splice(i, 1); else state.mastered.push(word);
+    DB.set('mastered', state.mastered);
+    doneBtn.closest('.wb-row').classList.toggle('done', i < 0);
+    return;
+  }
+  // 隐藏释义时，点行显示该行
+  if (state.wbHide) {
+    const row = e.target.closest('.wb-row');
+    if (row) { row.classList.toggle('reveal'); return; }
+  }
+
+  // 10) 设置项
+  const themeBtn = e.target.closest('#themeSeg button');
+  if (themeBtn) {
+    state.theme = themeBtn.dataset.theme;
+    DB.set('theme', state.theme);
+    applyTheme();
+    $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.theme === state.theme));
+    return;
+  }
+  const fontBtn = e.target.closest('#fontSeg button');
+  if (fontBtn) {
+    state.font = Number(fontBtn.dataset.fs);
+    DB.set('font', state.font);
+    document.documentElement.style.setProperty('--fs', state.font + 'px');
+    $$('#fontSeg button').forEach(b => b.classList.toggle('on', Number(b.dataset.fs) === state.font));
+    return;
+  }
+  const modeSetBtn = e.target.closest('#modeSetSeg button');
+  if (modeSetBtn) {
+    state.mode = modeSetBtn.dataset.mode;
+    DB.set('mode', state.mode);
+    $$('#modeSetSeg button').forEach(b => b.classList.toggle('on', b.dataset.mode === state.mode));
+    return;
+  }
+  if (e.target.closest('#btnReset')) {
+    if (confirm('确定清空全部学习记录吗？此操作不可撤销。')) {
+      DB.clearAll();
+      state.readIds = []; state.logDays = []; state.mastered = []; state.theme = 'auto'; state.font = 19; state.mode = 'both';
+      applyTheme();
+      document.documentElement.style.setProperty('--fs', '19px');
+      show('settings');
+    }
+    return;
+  }
+
+  // 11) 点空白处关掉弹窗
+  if (!e.target.closest('#tip')) hideTip();
+});
+
+/* select 的 change 事件 */
+document.addEventListener('change', e => {
+  if (e.target.id === 'wbDate') {
+    state.wbDate = e.target.value;
+    state.order = null;
+    renderView('words');
+  }
+});
+
+/* 键盘：Esc 关弹窗；Enter/空格 打开重点词 */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideTip();
+  if ((e.key === 'Enter' || e.key === ' ') && document.activeElement.classList.contains('w')) {
+    e.preventDefault();
+    showTip(document.activeElement.dataset.w, document.activeElement);
+  }
+});
+
+/* 滚动时关掉弹窗，避免错位 */
+window.addEventListener('scroll', hideTip, { passive: true });
+
+/* 主题快捷按钮 */
+$('#btnTheme').addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme;
+  state.theme = cur === 'dark' ? 'light' : 'dark';
+  DB.set('theme', state.theme);
+  applyTheme();
+  if (state.view === 'settings') renderView('settings');
+});
+
+/* ============================================================================
+   启动
+   ========================================================================== */
+(function init(){
+  applyTheme();
+  document.documentElement.style.setProperty('--fs', state.font + 'px');
+  // 当天有文章就打开当天，否则打开最新一篇
+  const today = ARTICLES.find(a => a.date === todayStr());
+  state.current = (today || ARTICLES[0]).id;
+
+  // 四页一次性渲染好，滑轨才有连续的页面可移
+  VIEW_ORDER.forEach(name => renderView(name));
+  state.view = 'read';
+  setProgress(0);
+
+  requestAnimationFrame(installLens);   // 法线图生成稍重，放到下一帧
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(() => { measureStage(); setProgress(pNow); installLens(); });
+  }
+})();
+</script>
+</body>
+</html>
