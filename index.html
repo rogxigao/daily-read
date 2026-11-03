@@ -1223,6 +1223,119 @@ const ARTICLES = [
 
 
 /* ---------------------------------------------------------------------------
+   2026-11-04 · AI 大模型 / 投机解码与内存带宽
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-04',
+  date: '2026-11-04',
+  topic: 'AI 大模型',
+  title: 'Guess First, Check Later',
+  subtitle: 'A model writes one word at a time, yet it can still answer in a hurry.',
+  level: 'CET-6',
+  body: [
+    { en: `When a language model answers you, most of the waiting has nothing to do with thinking.`,
+      zh: `语言模型回答你的时候，大部分等待时间其实与“思考”无关。` },
+    { en: `Reading a page is easy; writing one word after another is not.`,
+      zh: `读一页纸很容易，一个词接一个词地写出来却不容易。` },
+    { en: `The model produces text in a strictly {{sequential}} way: every new word needs the whole text so far as its input.`,
+      zh: `模型生成文本的方式是严格串行的：每一个新词，都要以此前全部文本作为输入。` },
+    { en: `Nothing about the hundredth word can be computed before the ninety-ninth exists.`,
+      zh: `第九十九个词还没出现，第一百个词就无从计算。` },
+    { en: `That single fact decides how fast a model can talk.`,
+      zh: `仅凭这一点，就决定了模型能说多快。` },
+    { en: `To emit one word, the machine must pass the entire model over the entire context.`,
+      zh: `为了输出一个词，机器必须让整个模型在整段上下文上跑一遍。` },
+    { en: `The arithmetic involved is modest; the movement of data is not.`,
+      zh: `其中涉及的计算量并不大，数据搬运量却很大。` },
+    { en: `Every weight has to travel from memory to the processor, and there is only so much {{bandwidth}} between them.`,
+      zh: `每一个权重都要从内存搬到处理器，而两者之间的带宽是有限的。` },
+    { en: `So the processor spends most of its time waiting, its thousands of units {{idle}}. Engineers call this being memory-bound, and it is the opposite of what most people imagine.`,
+      zh: `于是处理器大部分时间都在等待，成千上万个计算单元闲着。工程师把这种情况叫“受限于内存”，它和大多数人的想象正好相反。` },
+    { en: `A chip that can perform a trillion operations per second is standing still, because it cannot be fed.`,
+      zh: `一块每秒能运算上万亿次的芯片，就这样停在原地，因为它“喂不饱”。` },
+    { note: {
+        en: 'A machine that reads in parallel and writes in sequence will always be limited by the writing.',
+        zh: '一台能并行读、只能串行写的机器，永远被“写”这一端拖住。'
+      } },
+    { en: `Once you see this {{bottleneck}}, an odd idea becomes obvious.`,
+      zh: `一旦看清这个瓶颈，一个古怪的想法就变得顺理成章。` },
+    { en: `If writing is expensive and reading is cheap, then let something cheap do the writing and something expensive do the reading.`,
+      zh: `既然写很贵、读很便宜，那就让便宜的那个去写，让昂贵的那个去读。` },
+    { en: `A small model, called a {{draft}} model, guesses the next several words quickly and not very well.`,
+      zh: `一个被称为“草稿模型”的小模型，会很快地猜出接下来几个词，猜得并不算准。` },
+    { en: `The large model then has to {{verify}} all of those guesses in a single pass.`,
+      zh: `接着，大模型要在一次前向计算中把这些猜测全部核验一遍。` },
+    { en: `This is possible because of a property of the architecture: it can score many positions at once, so checking five guesses costs almost the same as checking one.`,
+      zh: `这之所以可行，源于架构本身的性质：它可以同时给许多位置打分，所以核对五个猜测与核对一个猜测的代价几乎一样。` },
+    { en: `The large model keeps the longest {{prefix}} it agrees with, throws the rest away, and continues from there.`,
+      zh: `大模型保留自己认同的最长前缀，把其余猜测丢掉，然后从这里接着往下写。` },
+    { en: `The result is not an approximation.`,
+      zh: `这样的结果并不是近似。` },
+    { en: `With the correct acceptance rule, the final {{distribution}} of words is exactly the one the large model would have produced alone.`,
+      zh: `只要接受规则正确，最终得到的词分布，与大模型独自生成时的分布完全一致。` },
+    { en: `Nothing is lost in quality; the only possible loss is wasted work.`,
+      zh: `质量上没有任何损失，唯一可能损失的是白做的功。` },
+    { en: `That waste is measured by the {{acceptance}} rate, the share of guesses that survive.`,
+      zh: `这种浪费用“接受率”来衡量，也就是猜测中最终存活下来的比例。` },
+    { en: `If the small model is well matched to the large one, most guesses pass and the answer arrives two or three times sooner.`,
+      zh: `如果小模型与大模型脾性相合，大多数猜测都能通过，答案会提前两三倍送到你面前。` },
+    { en: `If it is badly matched, the machine does the small model's work for nothing and gains almost nothing.`,
+      zh: `如果两者不匹配，机器就白干了小模型的活，收益几乎为零。` },
+    { en: `The same pattern appears far outside language models.`,
+      zh: `同样的思路，在语言模型之外早就出现过。` },
+    { en: `Processors {{speculate}} about which branch a program will take, and throw the guess away if it turns out wrong.`,
+      zh: `处理器会推测程序将走哪条分支，一旦猜错就把结果丢弃。` },
+    { en: `A database may let two transactions run {{optimistically}} and check for conflicts at the end.`,
+      zh: `数据库可能允许两个事务“乐观”地并行执行，最后再检查有没有冲突。` },
+    { en: `In each case an expensive check was made cheap, and a cheap guess was allowed to run ahead.`,
+      zh: `这几种情形里，昂贵的检查都被变便宜了，便宜的猜测则被允许先跑。` },
+    { en: `The lesson for a student is not the trick itself, but the habit behind it: find out what the machine is actually waiting for.`,
+      zh: `对学生来说，值得学的不是这个技巧本身，而是它背后的习惯：先搞清楚机器到底在等什么。` },
+    { en: `Most clever designs are just someone noticing where the time goes.`,
+      zh: `大多数巧妙的设计，不过是有人看清了时间都花在了哪里。` },
+    { note: {
+        en: 'Speed rarely comes from doing the same work faster. It comes from finding a cheaper way to be sure.',
+        zh: '速度很少来自“把同样的活干得更快”，它通常来自找到一种更便宜的确认方式。'
+      } }
+  ],
+  words: {
+    'sequential': { ipa: '/sɪˈkwenʃl/', cn: 'adj. 顺序的；串行的', ex: 'Text is generated in a sequential way, one token at a time.', exZh: '文本是串行生成的，一次一个词元。' },
+    'bandwidth': { ipa: '/ˈbændwɪdθ/', cn: 'n. 带宽', ex: 'The chip is fast, but bandwidth between memory and processor is the limit.', exZh: '芯片很快，但内存与处理器之间的带宽才是限制所在。' },
+    'idle': { ipa: '/ˈaɪdl/', cn: 'adj. 空闲的；闲置的', ex: 'Most of the units sit idle while the data arrives.', exZh: '数据送达的过程中，大部分计算单元都闲着。' },
+    'bottleneck': { ipa: '/ˈbɒtlnek/', cn: 'n. 瓶颈', ex: 'Find the bottleneck before you optimise anything.', exZh: '先去找到瓶颈，再谈优化任何东西。' },
+    'draft': { ipa: '/drɑːft/', cn: 'n. 草稿；初稿（v. 起草）', ex: 'A draft model writes a rough guess that a larger model will check.', exZh: '草稿模型先写出一个粗略的猜测，再由更大的模型核对。' },
+    'verify': { ipa: '/ˈverɪfaɪ/', cn: 'v. 核实；验证', ex: 'It is cheaper to verify five guesses than to make five.', exZh: '核对五个猜测，比做出五个猜测更便宜。' },
+    'prefix': { ipa: '/ˈpriːfɪks/', cn: 'n. 前缀', ex: 'Only the longest agreed prefix is kept.', exZh: '只有双方一致的最长前缀被保留下来。' },
+    'distribution': { ipa: '/ˌdɪstrɪˈbjuːʃn/', cn: 'n. 分布；分配', ex: 'The output distribution stays exactly the same.', exZh: '输出的分布保持完全一致。' },
+    'acceptance': { ipa: '/əkˈseptəns/', cn: 'n. 接受；接受率', ex: 'A higher acceptance rate means a larger speedup.', exZh: '接受率越高，加速幅度就越大。' },
+    'speculate': { ipa: '/ˈspekjuːleɪt/', cn: 'v. 推测；猜测', ex: 'The processor speculates, and pays only when it is wrong.', exZh: '处理器先行推测，只有猜错时才付出代价。' },
+    'optimistically': { ipa: '/ˌɒptɪˈmɪstɪkli/', cn: 'adv. 乐观地', ex: 'The two transactions run optimistically and are checked at the end.', exZh: '这两个事务乐观地执行，最后再统一检查。' }
+  },
+  quiz: [
+    { q: 'According to the passage, why is generating text slow even on a very fast chip?',
+      options: ['Because the model performs an enormous number of calculations for every single word.',
+                'Because every weight must be moved from memory for each word, so the chip spends most of its time waiting for data.',
+                'Because the network connection limits how fast words can be delivered.'],
+      answer: 1,
+      why: '原文强调“计算量不大，数据搬运量却很大”，处理器因为“喂不饱”而空转，属于受限于内存（memory-bound），不是算力不够。' },
+    { q: 'Why can the large model check five guessed words almost as cheaply as one?',
+      options: ['Because it only looks at the last word of the guess.',
+                'Because the architecture can score many positions in a single pass, so verification is parallel even though generation is not.',
+                'Because the draft model has already checked them before sending.'],
+      answer: 1,
+      why: '关键句：架构可以同时给许多位置打分，所以核对五个猜测与核对一个的代价几乎相同——生成是串行的，核验却是并行的。' },
+    { q: 'What happens if the draft model fits the large model poorly?',
+      options: ['The answers become less accurate than the large model would give alone.',
+                'The work is largely wasted and the speedup is small, but the quality of the output is unchanged.',
+                'The large model stops and asks for a different draft model.'],
+      answer: 1,
+      why: '文章明确说结果“不是近似”，接受规则正确时词分布完全一致，质量无损；匹配不好只是接受率低、白做功、加速有限。' }
+  ]
+},
+
+
+
+/* ---------------------------------------------------------------------------
    2026-11-03 · 金融市场 / 指数再平衡与被动资金
    --------------------------------------------------------------------------- */
 {
