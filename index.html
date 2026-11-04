@@ -1223,6 +1223,114 @@ const ARTICLES = [
 
 
 /* ---------------------------------------------------------------------------
+   2026-11-05 · 生物医药 / 多肽药物的半衰期工程
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-05',
+  date: '2026-11-05',
+  topic: '生物医药',
+  title: 'Teaching a Hormone to Stay',
+  subtitle: 'The body makes this signal for two minutes. A drug makes it last a week.',
+  level: 'CET-6',
+  body: [
+    { en: `Every time you eat, cells in the lining of your gut release a small {{hormone}} into the blood, carrying one message: food has arrived.`,
+      zh: `每次进食，肠道内壁的细胞都会向血液中释放一种小分子{{激素}}，只传递一个信息：食物到了。` },
+    { en: `That message is read in at least three places.`,
+      zh: `这个信息至少会在三个地方被读取。` },
+    { en: `In the pancreas, it tells the beta cells to prepare insulin, but only when glucose is actually rising.`,
+      zh: `在胰腺，它提示 β 细胞准备分泌胰岛素，但前提是血糖确实在上升。` },
+    { en: `In the brainstem, it produces {{satiety}}, the quiet sense that you have had enough.`,
+      zh: `在脑干，它带来{{饱足感}}，也就是那种“已经够了”的安静感觉。` },
+    { en: `In the stomach, it slows the rate at which food leaves for the intestine.`,
+      zh: `在胃里，它让食物排向肠道的速度慢下来。` },
+    { en: `The design is elegant because the signal is tied to the event: it appears only when there is food, so the response cannot run ahead of reality.`,
+      zh: `这套设计很高明，因为信号与事件绑定：有食物才有信号，反应因此不会跑到现实前面去。` },
+    { en: `There is one problem. The molecule is extremely short-lived.`,
+      zh: `但有一个问题：这个分子存活的时间极短。` },
+    { en: `An {{enzyme}} called DPP-4 cuts it apart within a minute or two, and the kidney clears the fragments.`,
+      zh: `一种叫 DPP-4 的{{酶}}会在一两分钟内把它切断，碎片再由肾脏清除。` },
+    { en: `Its half-life in blood is about two minutes.`,
+      zh: `它在血液中的半衰期只有两分钟左右。` },
+    { note: {
+        en: 'A short signal is not a weak signal. It is a signal with a time and a place.',
+        zh: '短促的信号并不等于微弱的信号，它是一个有明确时间与地点的信号。'
+      } },
+    { en: `Medicine, however, cannot give an injection every two minutes.`,
+      zh: `可是医学做不到每两分钟打一针。` },
+    { en: `Turning this hormone into a drug was therefore a problem of time, not of strength.`,
+      zh: `因此，把这种激素做成药，要解决的是时间问题，而不是强度问题。` },
+    { en: `The first fix is chemical: change one amino acid so that the enzyme no longer recognises its cutting site.`,
+      zh: `第一个办法是化学层面的：改掉一个氨基酸，让酶认不出原来的切割位点。` },
+    { en: `The {{peptide}} still binds the {{receptor}}, but the scissors can no longer grip it.`,
+      zh: `这条{{多肽}}依然能结合{{受体}}，剪刀却再也夹不住它。` },
+    { en: `The second fix is a passenger: attach a long fatty acid chain to the molecule.`,
+      zh: `第二个办法是给它配一位“乘客”：在分子上挂一条长脂肪酸链。` },
+    { en: `In the blood, this tail binds to {{albumin}}, the most abundant protein in {{plasma}}.`,
+      zh: `进入血液后，这条尾巴会与{{白蛋白}}结合——{{血浆}}中含量最多的蛋白质。` },
+    { en: `Albumin is far too large to pass the kidney's filter, so the drug rides on it and is released slowly.`,
+      zh: `白蛋白体积太大，过不了肾脏的滤网，于是药物搭着它慢慢释放。` },
+    { en: `Together, these two tricks stretch a two-minute signal into a week, which is why the drug can be injected once weekly.`,
+      zh: `两招合用，把两分钟的信号拉长到一周，这就是它能一周只打一次的原因。` },
+    { note: {
+        en: 'The molecule is not stronger than the natural one. It simply lingers.',
+        zh: '这个分子并不比天然的更强，它只是待得更久。'
+      } },
+    { en: `Duration, however, has a price.`,
+      zh: `但“更久”是有代价的。` },
+    { en: `The signal is no longer tied to meals, so the stomach stays slow and {{appetite}} stays low even when the body needs energy.`,
+      zh: `信号不再跟着进食走，于是胃一直慢吞吞的，{{食欲}}持续低迷，哪怕身体正需要能量。` },
+    { en: `The most common side effect is {{nausea}}, and it is not a malfunction: it is the same message arriving too often.`,
+      zh: `{{恶心}}是最常见的副作用，而它并不是故障：那只是同一条信息来得太频繁。` },
+    { en: `When weight falls quickly, part of what disappears is muscle, which is why doctors now pair the drug with protein and resistance training.`,
+      zh: `体重快速下降时，消失的一部分是肌肉，所以医生现在会同时要求补充蛋白质、做力量训练。` },
+    { en: `When the {{dose}} stops, hunger returns within weeks, because nothing in the body was repaired; the biology was {{overridden}}, not corrected.`,
+      zh: `一旦停{{药}}，饥饿感在几周内就会回来，因为身体里什么也没被修好；生理机制是被{{压过去}}的，而不是被纠正的。` },
+    { en: `The same reasoning explains why the drug is injected rather than swallowed: a peptide is a chain of amino acids, and the stomach is built to break exactly those chains.`,
+      zh: `同样的道理也解释了它为什么是注射而不是口服：多肽就是一条氨基酸链，而胃本来就是用来拆这种链的。` },
+    { en: `For a student, the lesson is a shift of attention.`,
+      zh: `对一名学生来说，值得记下的是注意力的转移。` },
+    { en: `Most people imagine drug discovery as a search for a molecule that works, but the molecule is often the easy part; the hard part is delivery — the right tissue, the right concentration, the right length of time.`,
+      zh: `大多数人以为新药研发就是找一个管用的分子，可分子往往是最容易的部分；难的是“送达”——送到对的组织、维持对的浓度、保持对的时间长度。` },
+    { en: `Pharmacologists therefore ask two separate questions: what the drug does to the body, and what the body does to the drug.`,
+      zh: `所以药理学家把问题拆成两个：药物对身体做了什么，以及身体对药物做了什么。` }
+  ],
+  words: {
+    'hormone': { ipa: '/ˈhɔːməʊn/', cn: 'n. 激素；荷尔蒙', ex: 'Insulin is a hormone that tells cells to take up glucose.', exZh: '胰岛素是一种激素，它指示细胞摄取葡萄糖。' },
+    'satiety': { ipa: '/səˈtaɪəti/', cn: 'n. 饱足感；饱腹感', ex: 'Satiety usually arrives before the plate is empty.', exZh: '饱足感往往在盘子见底之前就到了。' },
+    'enzyme': { ipa: '/ˈenzaɪm/', cn: 'n. 酶', ex: 'The enzyme cuts the peptide into pieces within minutes.', exZh: '这种酶在几分钟内就把多肽切成碎片。' },
+    'peptide': { ipa: '/ˈpeptaɪd/', cn: 'n. 肽；多肽', ex: 'A peptide is a short chain of amino acids.', exZh: '多肽是一条较短的氨基酸链。' },
+    'receptor': { ipa: '/rɪˈseptə(r)/', cn: 'n. 受体', ex: 'The drug binds a receptor on the surface of the cell.', exZh: '药物与细胞表面的受体结合。' },
+    'albumin': { ipa: '/ˈælbjʊmɪn/', cn: 'n. 白蛋白', ex: 'Albumin carries many drugs through the bloodstream.', exZh: '白蛋白把许多药物运送到血液各处。' },
+    'plasma': { ipa: '/ˈplæzmə/', cn: 'n. 血浆', ex: 'Albumin is the most abundant protein in plasma.', exZh: '白蛋白是血浆中含量最多的蛋白质。' },
+    'appetite': { ipa: '/ˈæpɪtaɪt/', cn: 'n. 食欲；胃口', ex: 'The drug lowers appetite even between meals.', exZh: '这种药即使在两餐之间也会降低食欲。' },
+    'nausea': { ipa: '/ˈnɔːziə/', cn: 'n. 恶心；反胃', ex: 'Nausea is common in the first weeks of treatment.', exZh: '治疗的头几周里，恶心很常见。' },
+    'dose': { ipa: '/dəʊs/', cn: 'n. 剂量；一剂', ex: 'The dose is raised slowly to limit side effects.', exZh: '剂量会缓慢增加，以减轻副作用。' },
+    'overridden': { ipa: '/ˌəʊvəˈrɪdn/', cn: 'v. 被推翻；被压过（override 的过去分词）', ex: 'The natural signal was overridden, not repaired.', exZh: '天然信号是被压过去的，而不是被修复的。' }
+  },
+  quiz: [
+    { q: 'Why is the natural hormone\'s short life described as part of an elegant design rather than a defect?',
+      options: ['Because a short life keeps the signal tied to the meal, so the body responds to food that has actually arrived.',
+                'Because the kidney needs a constant supply of fragments to stay healthy.',
+                'Because a long-lasting signal would permanently damage the beta cells.'],
+      answer: 0,
+      why: '原文说“信号与事件绑定：有食物才有信号，反应不会跑到现实前面”，短半衰期正是保证“按需响应”的机制。' },
+    { q: 'What does the attached fatty acid chain actually accomplish?',
+      options: ['It makes the peptide taste bitter so that it cannot be taken orally.',
+                'It binds albumin, which is too large to be filtered by the kidney, so the drug is released slowly over days.',
+                'It blocks the receptor so that the drug works at a lower dose.'],
+      answer: 1,
+      why: '脂肪酸链在血中与白蛋白结合，白蛋白体积过大无法通过肾滤过，药物借此缓慢释放，半衰期从几分钟延长到一周。' },
+    { q: 'What does the phrase "overridden, not corrected" imply about stopping the drug?',
+      options: ['The body has learned a new set point, so weight stays stable after treatment ends.',
+                'The underlying biology was never changed, so hunger returns within weeks once the drug is gone.',
+                'The drug permanently changes the gut bacteria that control appetite.'],
+      answer: 1,
+      why: '原文明说“身体里什么也没被修好”，停药后饥饿感几周内回归——药只是压过了生理信号，并未修复它。' }
+  ]
+},
+
+
+/* ---------------------------------------------------------------------------
    2026-11-04 · AI 大模型 / 投机解码与内存带宽
    --------------------------------------------------------------------------- */
 {
