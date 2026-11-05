@@ -1221,6 +1221,108 @@ const FIGURES = {
 
 const ARTICLES = [
 
+/* ---------------------------------------------------------------------------
+   2026-11-06 · 科技硬件 / 极紫外光刻的物理约束
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-06',
+  date: '2026-11-06',
+  topic: '科技硬件',
+  title: 'The Light That Nothing Can Bend',
+  subtitle: 'The machine that prints modern chips uses mirrors, because no lens would survive the light.',
+  level: 'CET-6',
+  body: [
+    { en: `Every chip inside your phone was printed, not assembled.`,
+      zh: `你手机里的每一块芯片都是“印”出来的，而不是“装”出来的。` },
+    { en: `A machine projects a pattern of light onto a silicon wafer, and wherever it lands, the pattern is fixed into the surface.`,
+      zh: `一台机器把一个光的图案投射到硅片上，光落在哪里，图案就在那里固化进表面。` },
+    { en: `For fifty years the industry has played a single game: make the light smaller.`,
+      zh: `五十年来，这个行业只玩一个游戏：把光做得更小。` },
+    { en: `Physics sets the floor, and the name of the floor is {{diffraction}}.`,
+      zh: `物理设下了下限，这块下限的名字叫{{衍射}}。` },
+    { en: `A pattern of light cannot be much sharper than the {{wavelength}} that carries it, however perfect the lens.`,
+      zh: `无论透镜多完美，一个光图案的锐度都不会比承载它的{{波长}}精细太多。` },
+    { en: `For two decades the industry worked at 193 nanometres, and then it ran out of room.`,
+      zh: `二十多年里，这个行业一直工作在 193 纳米，然后就再没有余量了。` },
+    { en: `Engineers stretched that wavelength with water between lens and wafer, and with masks that split one shape into several exposures; each trick worked, and each cost yield and money.`,
+      zh: `工程师用透镜与硅片之间的水、用把一个形状拆成多次曝光的掩模，硬把这个波长撑住；每个技巧都奏效，也都吃掉了良率和成本。` },
+    { en: `The real solution was a jump to 13.5 nanometres, in a region called extreme ultraviolet.`,
+      zh: `真正的解法是一步跳到 13.5 纳米，这一段光谱叫极紫外。` },
+    { en: `The first casualty is glass.`,
+      zh: `第一个倒下的东西是玻璃。` },
+    { en: `At this wavelength almost every material shows strong {{absorption}}, air included, so no lens can carry the light.`,
+      zh: `在这个波长上，几乎所有材料都表现出强烈的{{吸收}}，连空气也不例外，于是没有任何透镜能承载这束光。` },
+    { en: `What remains is a mirror, and the light needs a {{vacuum}} to survive the trip.`,
+      zh: `剩下的只有镜子，而光需要一段{{真空}}才能走完全程。` },
+    { note: {
+        en: 'A lens bends light by letting it pass through matter. If matter swallows the light, the only tool left is a surface that throws it back.',
+        zh: '透镜靠让光穿过物质来弯折它。可如果物质把光吞掉，剩下的唯一工具就是能把光扔回去的表面。'
+      } },
+    { en: `These mirrors are not polished metal but stacks of about fifty alternating layers, each only a few atoms thick.`,
+      zh: `这些镜子不是抛光金属，而是约五十层交替材料叠起来的，每一层只有几个原子厚。` },
+    { en: `They {{reflect}} by interference, adding many weak echoes into one strong one.`,
+      zh: `它们靠干涉来{{反射}}，把许多微弱的回声叠加成一束强的。` },
+    { en: `A good one returns about seventy percent, and a scanner uses ten in a row, so most of the beam is gone before the wafer sees anything.`,
+      zh: `好一点的镜子大约能返回七成光，而一台扫描机一路要用十片左右，于是光束还没照到硅片，大半已经没了。` },
+    { en: `The mask is a mirror too, its pattern etched into a reflecting surface rather than cut into glass.`,
+      zh: `掩模本身也是镜子：图案刻在反射面上，而不是刻在玻璃里。` },
+    { en: `Making the light is harder than carrying it.`,
+      zh: `造光比运光更难。` },
+    { en: `A generator shoots roughly fifty thousand tin {{droplets}} into a chamber each second, flattens each with a weak pulse, then blasts it into {{plasma}} with a strong one.`,
+      zh: `一台发生器每秒把大约五万颗锡{{液滴}}射进腔体，用弱脉冲把每颗压扁，再用强脉冲把它打成{{等离子体}}。` },
+    { en: `That plasma is hotter than the surface of the sun and glows at exactly the needed wavelength for a few billionths of a second; gathering that flash into a beam is a problem of geometry and heat, not chemistry.`,
+      zh: `这团等离子体比太阳表面还热，并在需要的波长上恰好发光，只持续几十亿分之一秒；把这瞬闪光收拢成可用的光束，是几何与散热的问题，不是化学问题。` },
+    { en: `Below the light sits the stage, sliding the wafer under the beam at about a metre per second and reversing within milliseconds.`,
+      zh: `光束下方是工件台，它以大约每秒一米的速度把硅片送过光斑，并在毫秒之内反向。` },
+    { en: `Its {{precision}} is measured in nanometres, and holding that while accelerating takes constant active correction rather than a rigid frame.`,
+      zh: `它的{{精度}}以纳米计，而要在加速过程中维持这个精度，靠的是持续的主动校正，而不是一个刚性框架。` },
+    { en: `Each layer must also line up with the one beneath it, and the error allowed, called {{overlay}}, is a fraction of the smallest feature.`,
+      zh: `每一层还必须与下面那一层对齐，允许的误差叫{{套刻}}，只有最小线宽的一小部分。` },
+    { en: `A single stray vibration, from a lorry outside or a pump inside, can spend that {{tolerance}} before the exposure even starts.`,
+      zh: `一次多余的振动——外面一辆卡车，或里面一台泵——就能在曝光开始之前把这点{{容差}}花光。` },
+    { en: `And because the light is so energetic, each flash carries very few photons, so the printed pattern keeps a {{stochastic}} roughness that no cleaning can remove.`,
+      zh: `又因为这光能量太高，每次闪光里携带的光子少得可怜，印出的图案因此带着一种{{随机}}的粗糙，再怎么清洁也去不掉。` },
+    { en: `What impresses is not any single part but that every constraint arrived at once: vacuum, ten mirrors, a plasma at several hundred thousand degrees, a stage that races and then settles.`,
+      zh: `真正令人震撼的不是某个单独的零件，而是所有约束同时从物理里涌出来：真空、十片镜子、四万度的等离子体、一个先飞驰再稳住的工件台。` },
+    { en: `The strange shape of the machine is therefore not a matter of taste; it is the shortest path left once physics removed the alternatives.`,
+      zh: `所以这台机器奇怪的形状不是审美问题，而是物理把其它选项都划掉之后剩下的那条最短路径。` }
+  ],
+  words: {
+    'diffraction': { ipa: '/dɪˈfrækʃn/', cn: 'n. 衍射', ex: 'Diffraction sets the smallest feature a given wavelength can print.', exZh: '衍射决定了一个给定波长所能印出的最小线宽。' },
+    'wavelength': { ipa: '/ˈweɪvleŋθ/', cn: 'n. 波长', ex: 'A shorter wavelength allows a sharper pattern.', exZh: '更短的波长可以带来更锐利的图案。' },
+    'absorption': { ipa: '/əbˈsɔːpʃn/', cn: 'n. 吸收；吸光', ex: 'Strong absorption in air means the beam must travel in vacuum.', exZh: '空气中的强烈吸收意味着光束必须在真空中传输。' },
+    'vacuum': { ipa: '/ˈvækjuəm/', cn: 'n. 真空', ex: 'The optical path is kept in vacuum to avoid absorption.', exZh: '整个光路保持在真空中，以避免吸收。' },
+    'reflect': { ipa: '/rɪˈflekt/', cn: 'v. 反射；反光', ex: 'The multilayer coating reflects about seventy percent of the light.', exZh: '这层多层膜能反射大约七成的光。' },
+    'droplets': { ipa: '/ˈdrɒpləts/', cn: 'n. 小液滴（droplet 的复数）', ex: 'Tiny tin droplets are fired into the chamber fifty thousand times a second.', exZh: '微小的锡液滴每秒被射入腔体五万次。' },
+    'plasma': { ipa: '/ˈplæzmə/', cn: 'n. 等离子体', ex: 'The laser turns each droplet into a plasma that radiates extreme ultraviolet light.', exZh: '激光把每颗液滴变成会辐射极紫外光的等离子体。' },
+    'precision': { ipa: '/prɪˈsɪʒn/', cn: 'n. 精度；精密', ex: 'The stage moves with a precision of a few nanometres.', exZh: '工件台以几纳米的精度移动。' },
+    'overlay': { ipa: '/ˌəʊvəˈleɪ/', cn: 'n. 套刻；层间对准（光刻术语）', ex: 'Poor overlay makes two layers of a chip misalign.', exZh: '套刻不佳会让芯片的两层对不齐。' },
+    'tolerance': { ipa: '/ˈtɒlərəns/', cn: 'n. 公差；容差', ex: 'The tolerance for vibration is smaller than the width of a virus.', exZh: '允许的振动容差比一个病毒的宽度还小。' },
+    'stochastic': { ipa: '/stəˈkæstɪk/', cn: 'adj. 随机的；概率性的', ex: 'Stochastic effects limit how small a printed feature can be.', exZh: '随机效应限制了印出的线宽能有多小。' }
+  },
+  quiz: [
+    { q: 'Why does an EUV scanner use mirrors instead of lenses?',
+      options: ['Because mirrors are cheaper to manufacture than glass lenses of that size.',
+                'Because almost all materials absorb light at 13.5 nanometres, so no lens can transmit the beam.',
+                'Because mirrors can focus light more sharply than lenses at any wavelength.'],
+      answer: 1,
+      why: '原文说这个波长上几乎所有材料（包括空气）都强烈吸收，透射式透镜不可行，只能用反射镜并在真空中传输。' },
+    { q: 'Why is most of the light lost on its way to the wafer?',
+      options: ['Because each mirror returns only about seventy percent, and about ten mirrors are used in a row, so the losses multiply.',
+                'Because the mask is designed to block most of the light on purpose.',
+                'Because the tin droplets absorb the beam after it leaves the source.'],
+      answer: 0,
+      why: '单镜反射率约七成，一路约十片镜子，损耗是相乘的，所以光束到达硅片前大部分已经损失。' },
+    { q: 'What does the last paragraph suggest about the machine\'s unusual design?',
+      options: ['It is mainly the result of aesthetic choices made by manufacturers.',
+                'It will soon be abandoned because the design is too inefficient.',
+                'It is the shortest path left once physics has ruled out the alternatives, since all constraints must be met at the same time.'],
+      answer: 2,
+      why: '原文明确说“物理把其它选项都划掉之后剩下的最短路径”，强调真空、镜子、等离子体、工件台等约束必须同时满足。' }
+  ]
+},
+
+
 
 /* ---------------------------------------------------------------------------
    2026-11-05 · 生物医药 / 多肽药物的半衰期工程
