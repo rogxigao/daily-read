@@ -1222,6 +1222,103 @@ const FIGURES = {
 const ARTICLES = [
 
 /* ---------------------------------------------------------------------------
+   2026-11-09 · 前沿科研 / 磁约束聚变：湍流、材料与燃料循环
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-09',
+  date: '2026-11-09',
+  topic: '前沿科研',
+  title: 'The Star That Will Not Sit Still',
+  subtitle: 'Fusion is easy to start and hard to hold: the real obstacle is not heat, but a boiling fluid that keeps moving.',
+  level: 'CET-6',
+  body: [
+    { en: `The Sun has no magnets and no engineers; it holds its burning {{fusion}} core together with gravity.`,
+      zh: `太阳既没有磁体，也没有工程师，它靠引力把正在{{聚变}}的核心拢在一起。` },
+    { en: `On Earth gravity is far too weak for that trick, so the only force left strong enough is magnetism.`,
+      zh: `在地球上，引力弱得根本玩不了这一手，剩下唯一够强的力量就只有磁性。` },
+    { en: `A fusion reactor therefore looks like a doughnut: a ring-shaped chamber in which hot gas is held clear of every wall.`,
+      zh: `所以聚变装置看起来像个甜甜圈：一个环形真空室，炽热的气体被悬空托住，不碰任何一面器壁。` },
+    { en: `The gas is not ordinary air but {{plasma}}, the fourth state of matter, in which electrons have been torn from their nuclei.`,
+      zh: `这团气体不是普通空气，而是{{等离子体}}——物质的第四态，电子已经被从原子核上剥离。` },
+    { en: `Because it is charged, it can be steered by magnetic fields the way a river is steered by its banks.`,
+      zh: `因为带电，它能被磁场引导，就像河水被河岸引导一样。` },
+    { en: `In a {{tokamak}} the field is twisted into a helix, so no particle can run straight out along a single line.`,
+      zh: `在{{托卡马克}}里，磁场被拧成螺旋，没有哪个粒子能沿一条直线直接跑出去。` },
+    { en: `Heating is the easy part: strong currents, microwaves and beams of fast atoms all push the temperature past one hundred million degrees.`,
+      zh: `加热反而是容易的部分：强大电流、微波和高速原子束，都能把温度推过一亿度。` },
+    { en: `The hard part is that a hot, charged fluid refuses to sit still.`,
+      zh: `难的地方在于，一团炽热带电的流体根本不肯老实待着。` },
+    { en: `Engineers sum up the goal in a product of three numbers: density, temperature, and how long the energy stays {{confined}}.`,
+      zh: `工程师把目标浓缩成三个数字的乘积：密度、温度，以及能量被{{约束}}住的时间。` },
+    { en: `Push any one of them up and the other two tend to fall, which is why progress has been slow and expensive.`,
+      zh: `把其中任何一个抬上去，另外两个往往就往下掉——这就是进展既慢又贵的原因。` },
+    { en: `Worse, the plasma generates its own fields, and those fields can grow into {{instability}}.`,
+      zh: `更麻烦的是，等离子体自己会生磁场，而那些磁场会长成{{不稳定性}}。` },
+    { en: `A tear in the magnetic surfaces lets heat escape in a narrow tongue, while {{turbulence}} stirs the rest out far faster than the first theories predicted.`,
+      zh: `磁面上的一道撕裂，会让热量顺着一条窄舌漏出去；而{{湍流}}把剩下的热搅得更快泄走，比最早的理论预言快得多。` },
+    { en: `A sudden collapse at the edge can drop a tenth of the stored energy onto one small tile in a millisecond.`,
+      zh: `边缘的突然崩塌，能在毫秒之间把十分之一的储能砸到一小块瓦片上。` },
+    { note: {
+        en: 'A fusion reactor is not a furnace. It is a magnetic bottle that has to stay sealed while it boils.',
+        zh: '聚变装置不是炉子，而是一只必须在沸腾时保持密封的磁瓶。'
+      } },
+    { en: `Even a perfect bottle faces a second problem: the {{neutron}}s released by fusion carry most of the energy and ignore every magnetic field.`,
+      zh: `即使瓶子完美，还有第二个难题：聚变放出的{{中子}}带走了大部分能量，而它们对任何磁场都不理不睬。` },
+    { en: `They fly into the wall, knock atoms out of their places in the metal, and slowly make it {{brittle}}.`,
+      zh: `它们撞进壁面，把金属里的原子从原位撞开，慢慢让材料变{{脆}}。` },
+    { en: `The same stream must also breed the fuel, because {{tritium}} barely exists in nature.`,
+      zh: `同一批中子还得用来“造”燃料，因为{{氚}}在自然界几乎不存在。` },
+    { en: `The plan is a {{blanket}} of lithium around the chamber: one neutron splits one lithium nucleus into helium and tritium, and the plant feeds itself.`,
+      zh: `方案是在腔体外围包一层锂做的{{包层}}：一个中子把一个锂核劈成氦和氚，电站就能自己供燃料。` },
+    { en: `That loop has never run continuously, and until it does, fusion stays a triumph of physics and an open question in engineering.`,
+      zh: `这个循环从未连续跑通过；在它跑通之前，聚变始终是物理上的胜利、工程上的问号。` },
+    { en: `ITER, the international machine now being assembled in France, is not a power station but a test of whether these parts can live together.`,
+      zh: `正在法国组装的那台国际装置 ITER 并不是电站，而是在检验这些部件能否共存。` },
+    { en: `Its giant coils are {{superconducting}}, cooled to a few degrees above absolute zero so that current can circle for years without fading.`,
+      zh: `它的巨型线圈是{{超导}}的，被冷到只比绝对零度高几度，电流能在里面绕上好几年而不衰减。` },
+    { en: `Newer private designs use high-temperature superconductors to squeeze the same field into a much smaller ring, betting that smaller will be cheaper.`,
+      zh: `一些更新的私营方案改用高温超导，把同样的磁场压进小得多的环里，赌的是“小即便宜”。` },
+    { en: `Both roads share one honest measure of progress: not a press release, but the number of seconds a plasma stays hot.`,
+      zh: `两条路线共用同一把诚实的进度尺：不是新闻稿，而是等离子体维持高温的秒数。` },
+    { en: `So the question worth asking is not when fusion arrives, but which of three barriers falls first: turbulence, materials, or the fuel cycle.`,
+      zh: `所以真正值得追问的不是“聚变何时到来”，而是三道关口——湍流、材料、燃料循环——哪一个先被攻破。` }
+  ],
+  words: {
+    'fusion': { ipa: '/ˈfjuːʒn/', cn: 'n. 核聚变；融合', ex: 'Fusion releases energy when light nuclei join together.', exZh: '轻原子核结合时，聚变会释放能量。' },
+    'plasma': { ipa: '/ˈplæzmə/', cn: 'n. 等离子体；血浆', ex: 'A plasma conducts electricity because its charges are free to move.', exZh: '等离子体能导电，因为其中的电荷可以自由移动。' },
+    'tokamak': { ipa: '/ˈtəʊkəmæk/', cn: 'n. 托卡马克（环形磁约束聚变装置）', ex: 'A tokamak bends its field into a closed loop.', exZh: '托卡马克把磁场弯成一个闭合的环。' },
+    'confined': { ipa: '/kənˈfaɪnd/', cn: 'adj. 被约束的；受限的（confine v. 把…限制在）', ex: 'Energy that stays confined longer makes ignition easier.', exZh: '能量被约束得越久，点火就越容易。' },
+    'instability': { ipa: '/ˌɪnstəˈbɪləti/', cn: 'n. 不稳定性；失衡', ex: 'The instability grew until the plasma touched the wall.', exZh: '不稳定性不断增长，直到等离子体碰到器壁。' },
+    'turbulence': { ipa: '/ˈtɜːbjələns/', cn: 'n. 湍流；紊流；混乱', ex: 'Turbulence carries heat out much faster than smooth flow would.', exZh: '湍流带走热量的速度远快于平顺的流动。' },
+    'neutron': { ipa: '/ˈnjuːtrɒn/', cn: 'n. 中子', ex: 'A neutron has no charge, so a magnetic field cannot hold it.', exZh: '中子不带电，所以磁场抓不住它。' },
+    'brittle': { ipa: '/ˈbrɪtl/', cn: 'adj. 脆的；易碎的', ex: 'Years of bombardment leave the steel brittle.', exZh: '多年的轰击会让钢材变脆。' },
+    'tritium': { ipa: '/ˈtrɪtiəm/', cn: 'n. 氚（氢的同位素）', ex: 'Tritium is radioactive and rare outside a reactor.', exZh: '氚具有放射性，在反应堆之外十分稀少。' },
+    'blanket': { ipa: '/ˈblæŋkɪt/', cn: 'n. 包层；毯子（v. 覆盖）', ex: 'The blanket turns neutrons into heat and new fuel.', exZh: '包层把中子转化成热量和新燃料。' },
+    'superconducting': { ipa: '/ˌsuːpəkənˈdʌktɪŋ/', cn: 'adj. 超导的（superconduct v. 超导）', ex: 'Superconducting coils carry current with no resistance at all.', exZh: '超导线圈输电时完全没有电阻。' }
+  },
+  quiz: [
+    { q: 'Why can a fusion reactor not simply be a very hot sealed box?',
+      options: ['Because no material survives contact with a plasma at one hundred million degrees, so magnetic fields must hold the gas away from every wall.',
+                'Because the plasma would leak out through the gaps between the reactor tiles.',
+                'Because fusion can only occur in a vacuum with no gas present at all.'],
+      answer: 0,
+      why: '原文的核心是“器壁不能碰”：亿度量级的等离子体一接触实体材料就会损毁，所以真正的容器是磁场，金属壁只是最后的备份。' },
+    { q: 'What does the "product of three numbers" tell engineers?',
+      options: ['That density, temperature and confinement time can each be raised independently without cost.',
+                'That the three factors trade against one another, so raising one usually costs another, which is why progress is slow and expensive.',
+                'That temperature alone decides success, since the other two follow automatically.'],
+      answer: 1,
+      why: '三重积是三者相乘，抬高一个往往压掉另一个，所以每一步都要在密度、温度和约束时间之间权衡，这正是进展缓慢又昂贵的原因。' },
+    { q: 'Why is tritium treated as a problem rather than as fuel that can simply be bought?',
+      options: ['Because tritium is radioactive and therefore impossible to transport.',
+                'Because it barely exists in nature and has to be bred from lithium by the very neutrons that fusion produces.',
+                'Because it can only be manufactured inside the Sun.'],
+      answer: 1,
+      why: '氚在自然界存量极微，必须靠聚变放出的中子轰击锂来增殖，于是“燃料循环”本身成了必须先跑通的技术关口。' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
    2026-11-08 · 金融交易与市场 / 做市商的价差、库存与逆向选择
    --------------------------------------------------------------------------- */
 {
