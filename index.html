@@ -1222,6 +1222,105 @@ const FIGURES = {
 const ARTICLES = [
 
 /* ---------------------------------------------------------------------------
+   2026-11-10 · AI 大模型 / 长上下文：KV 缓存、二次复杂度与"中间遗忘"
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-10',
+  date: '2026-11-10',
+  topic: 'AI 大模型',
+  title: 'The Cost of Remembering',
+  subtitle: 'A chat model carries nothing from one word to the next. Everything it seems to remember, it pays for again.',
+  level: 'CET-6',
+  body: [
+    { en: `A chat model looks as if it remembers the conversation, yet it keeps no memory the way a person does.`,
+      zh: `聊天模型看起来记得这段对话，但它并不像人那样存着一份记忆。` },
+    { en: `Every time it writes a new word, it reads the whole {{transcript}} again, from the first line to the last.`,
+      zh: `每当它写出一个新词，它就把整段{{对话记录}}从头到尾再读一遍。` },
+    { en: `The text is cut into tokens, and each token is turned into a long list of numbers called an {{embedding}}.`,
+      zh: `文本先被切成词元，每个词元再被转换成一长串数字，称为{{嵌入向量}}。` },
+    { en: `Numbers can be compared, so the {{attention}} mechanism compares every pair of tokens in the passage.`,
+      zh: `数字可以相互比较，于是{{注意力}}机制会把文中每一对词元都比一遍。` },
+    { en: `The work therefore grows with the square of the length: double the text and you do four times as much arithmetic.`,
+      zh: `计算量因此随长度的平方增长：文本翻倍，运算量就变成四倍。` },
+    { en: `This {{quadratic}} growth is why a very long {{prompt}} costs far more than a short one, even before the model answers.`,
+      zh: `这种{{二次}}增长正是超长{{提示词}}远比短提示词昂贵的原因，而且这笔账在模型开口之前就已经算上了。` },
+    { en: `Repeating all that work for every new word would be unbearable, so engineers store the intermediate results.`,
+      zh: `每写一个新词就把全部工作重做一遍，是谁也受不了的，所以工程师把中间结果存了下来。` },
+    { en: `This store is called the KV {{cache}}, and it is closer to a working desk than to a library.`,
+      zh: `这个存储叫作 KV {{缓存}}，它更像一张摊满草稿的工作台，而不是一座图书馆。` },
+    { en: `It holds, for each token already seen, two {{vector}} lists that later tokens will need to consult.`,
+      zh: `对每一个已经见过的词元，它保存两份{{向量}}表，供后面的词元查阅。` },
+    { en: `The size is easy to estimate: layers times width times two, times the number of tokens, times the bytes per number.`,
+      zh: `它的大小不难估算：层数乘宽度再乘二，再乘词元数量，再乘每个数字占的字节数。` },
+    { en: `For a mid-sized model this comes to roughly half a megabyte per token, which sounds small until you multiply it.`,
+      zh: `对中等规模的模型，这大约是每个词元半个兆字节——听上去不多，直到你乘上去。` },
+    { en: `A hundred thousand tokens then need about fifty gigabytes, more than the card that is doing the thinking.`,
+      zh: `十万个词元就需要约五十吉字节，比正在"思考"的那张显卡还要大。` },
+    { note: {
+        en: 'The model does not remember you. It re-reads you, and the cache is the desk it re-reads you on.',
+        zh: '模型并不"记得"你，它只是把你重读一遍；而缓存，就是它重读你的那张桌子。'
+      } },
+    { en: `Memory is the real limit, because whatever space the cache takes cannot serve another user at the same time.`,
+      zh: `真正的瓶颈是显存：缓存占掉的那部分空间，同一时间没法再拿去服务另一个用户。` },
+    { en: `Serving systems therefore pack many conversations into one card, and a single long chat can push the rest out.`,
+      zh: `所以服务系统会把许多对话塞进同一张卡，而一个特别长的对话就可能把其余的挤出去。` },
+    { en: `Early systems reserved a fixed block for every request and wasted most of it, so newer ones copied an idea from operating systems.`,
+      zh: `早期系统为每个请求预留固定的一块空间，大半都浪费了；新系统于是从操作系统那里借了一招。` },
+    { en: `They cut the cache into small pages and hand them out only when they are actually filled.`,
+      zh: `它们把缓存切成小页，只在真正写满时才分配出去。` },
+    { en: `The second problem is not space but quality: a model trained on short passages does not automatically read long ones well.`,
+      zh: `第二个问题不在空间，而在质量：一个只在短段落上训练的模型，并不会自动读好长文。` },
+    { en: `The facts in the middle of a long input are harder to {{recall}} than the ones at either end.`,
+      zh: `长输入中段的事实，比两端的事实更难被{{回忆}}起来。` },
+    { en: `Position numbers beyond anything seen in training also behave badly, so stretching the window is never free.`,
+      zh: `超出训练时见过的位置编号同样表现失常，所以把窗口拉长从来不是白拿的。` },
+    { en: `One common {{compromise}} is a sliding window, in which the model keeps only the most recent tokens in full detail.`,
+      zh: `一种常见的{{折中}}是滑动窗口：模型只完整保留最近的一批词元。` },
+    { en: `Another is a {{sparse}} pattern, where each token looks at a few chosen neighbours instead of all of them.`,
+      zh: `另一种是{{稀疏}}模式：每个词元只看少数挑出来的邻居，而不是全部。` },
+    { en: `Both save memory, and both give up some exactness, which is the honest price of a longer conversation.`,
+      zh: `两种办法都省显存，也都放弃了一部分精确性——这就是更长对话要付的诚实价格。` },
+    { en: `So when a service advertises a million tokens of context, the interesting question is not the number.`,
+      zh: `所以当某项服务宣传"百万词元上下文"时，真正有意思的问题并不是那个数字。` },
+    { en: `It is how much of that window the model can still use, and what the provider gave up to {{allocate}} it.`,
+      zh: `而是那扇窗口里模型还能真正用上多少，以及服务商为了{{分配}}出这些空间，究竟让掉了什么。` }
+  ],
+  words: {
+    'transcript': { ipa: '/ˈtrænskrɪpt/', cn: 'n. 文字记录；抄本；成绩单', ex: 'The model rereads the entire transcript before writing the next word.', exZh: '模型在写下下一个词之前，会把整段记录重读一遍。' },
+    'embedding': { ipa: '/ɪmˈbedɪŋ/', cn: 'n. 嵌入向量；嵌入（embed v. 嵌入）', ex: 'An embedding turns a word into a list of numbers.', exZh: '嵌入把一个个词变成一串数字。' },
+    'attention': { ipa: '/əˈtenʃn/', cn: 'n. 注意力；关注（此处指注意力机制）', ex: 'Attention lets one token weigh how much each earlier token matters.', exZh: '注意力让一个词元去权衡先前每个词元有多重要。' },
+    'quadratic': { ipa: '/kwɒˈdrætɪk/', cn: 'adj. 二次的；平方的', ex: 'The cost grows in a quadratic way, not a linear one.', exZh: '这种成本按二次方式增长，而不是线性增长。' },
+    'prompt': { ipa: '/prɒmpt/', cn: 'n. 提示词（adj. 迅速的；v. 促使）', ex: 'A long prompt is paid for even before the first answer token.', exZh: '长提示词在第一个回答词元出现之前就已经在计费了。' },
+    'cache': { ipa: '/kæʃ/', cn: 'n. 缓存；隐藏处（v. 缓存，藏起来）', ex: 'A larger cache lets one server keep more conversations open.', exZh: '更大的缓存让一台服务器能同时保留更多对话。' },
+    'vector': { ipa: '/ˈvektə(r)/', cn: 'n. 向量；矢量', ex: 'Each token is stored as two vectors in the cache.', exZh: '每个词元在缓存里被存成两个向量。' },
+    'recall': { ipa: '/rɪˈkɔːl/', cn: 'v. 回忆起；召回（n. 召回）', ex: 'The model recalls the start of a document better than its middle.', exZh: '模型对文档开头的回忆要好于中段。' },
+    'compromise': { ipa: '/ˈkɒmprəmaɪz/', cn: 'n. 折中；妥协（v. 让步；危及）', ex: 'A sliding window is a compromise between cost and reach.', exZh: '滑动窗口是成本与覆盖范围之间的折中。' },
+    'sparse': { ipa: '/spɑːs/', cn: 'adj. 稀疏的；稀少的', ex: 'A sparse pattern skips most pairs and keeps only a few.', exZh: '稀疏模式跳过大多数配对，只保留少数几对。' },
+    'allocate': { ipa: '/ˈæləkeɪt/', cn: 'v. 分配；拨给', ex: 'The scheduler allocates memory to a request only when it is needed.', exZh: '调度器只在需要的时候才把显存分配给一个请求。' }
+  },
+  quiz: [
+    { q: 'Why does doubling the length of a text roughly quadruple the work?',
+      options: ['Because every token has to be stored twice, once as text and once as numbers.',
+                'Because attention compares every pair of tokens, and the number of pairs grows with the square of the length.',
+                'Because a longer text forces the model to use a larger vocabulary.'],
+      answer: 1,
+      why: '注意力要对每一对词元做一次比较，长度翻倍意味着配对数量变成四倍，所以开销是二次增长，而不是线性增长。' },
+    { q: 'What does the KV cache actually hold, and why is it needed?',
+      options: ['It holds the two vectors per token already seen, so the model need not redo the same computation for each new word.',
+                'It holds the model\'s earlier answers, so that it can repeat them word for word later.',
+                'It holds the user\'s personal profile between separate sessions.'],
+      answer: 0,
+      why: '缓存存的是已见词元的向量中间结果，目的是避免每写一个字都从头重算；它既不是答案库，也不跨会话保存用户信息。' },
+    { q: 'What does the passage suggest a huge advertised context window does not guarantee?',
+      options: ['That the provider will charge less for it.',
+                'That the model can read at all beyond a single page.',
+                'That the whole window is used equally well, since material in the middle is recalled less reliably and the space must still be paid for in memory.'],
+      answer: 2,
+      why: '原文明确说"有趣的问题不是那个数字"，而是窗口里真正能用上多少、以及服务商为此让掉了什么——中段遗忘与显存开销是两大代价。' }
+  ]
+},
+
+/* ---------------------------------------------------------------------------
    2026-11-09 · 前沿科研 / 磁约束聚变：湍流、材料与燃料循环
    --------------------------------------------------------------------------- */
 {
