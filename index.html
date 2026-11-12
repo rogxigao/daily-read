@@ -1220,6 +1220,108 @@ const FIGURES = {
 };
 
 const ARTICLES = [
+/* ---------------------------------------------------------------------------
+   2026-11-13 · 机器人自动化 / 工业机器人：重复精度不等于绝对精度
+   --------------------------------------------------------------------------- */
+{
+  id: '2026-11-13',
+  date: '2026-11-13',
+  topic: '机器人自动化',
+  title: 'Precise but Not Accurate',
+  subtitle: 'A machine can hit the same point fifty thousand times and still miss the one you asked for.',
+  level: 'CET-6',
+  body: [
+    { en: `A car-line robot returns to the same spot fifty thousand times a day, each time within a twentieth of a millimetre.`,
+      zh: `产线上的机械臂一天要回到同一个位置五万次，每次偏差都在二十分之一毫米以内。` },
+    { en: `Give it a coordinate from a drawing, and the same arm may miss by two millimetres.`,
+      zh: `可要是给它一个图纸上的坐标，同一条臂可能偏出两毫米。` },
+    { en: `The first quality, {{repeatability}}, is a promise the machine makes to itself: it can do again whatever it did last time.`,
+      zh: `第一种品质叫{{重复精度}}，是机器对自己许的诺言：上次怎么做的，这次照样能做一遍。` },
+    { en: `The second, {{accuracy}}, is a promise about the world: the point it reaches is the point you named.`,
+      zh: `第二种叫{{绝对精度}}，是对世界许的诺言：它到达的那一点，就是你指定的那一点。` },
+    { en: `One is easy to build. The other has to be earned.`,
+      zh: `前者好造，后者得一点点挣来。` },
+    { en: `The controller never sees the arm; it works from a model of link lengths and joint offsets.`,
+      zh: `控制器其实看不见那条臂，它只依着一个模型算——每根连杆多长、每个关节偏多少。` },
+    { en: `No real arm matches that model, because every link is machined to a {{tolerance}} and every joint pressed on with error.`,
+      zh: `真实的臂没有一条与模型相符：连杆只按某个{{公差}}加工，关节装配时也带着误差。` },
+    { en: `So the numbers must be measured. Engineers drive the tool to dozens of poses, watch it with a laser tracker, and {{calibrate}} the model until it agrees with the metal.`,
+      zh: `所以这些数字只能靠测量。工程师让刀具走到几十个位姿，用激光跟踪仪盯着它，再{{标定}}模型，直到它与实物对得上。` },
+    { note: {
+        en: 'The model is not the machine. Calibration is the work of making the two agree.',
+        zh: '模型不是机器本身，标定就是让两者达成一致的那份功夫。'
+      } },
+    { en: `Even then the arm changes within a shift: motors warm up, steel expands, and the tool {{drift}}s a few tenths of a millimetre before lunch.`,
+      zh: `就算这样，一条臂在一个班次里也会变：电机发热，钢材膨胀，没到午饭刀具就{{漂移}}了几个十分之一毫米。` },
+    { en: `Aluminium grows twenty-three millionths of its length per degree, which over two metres is no rounding error.`,
+      zh: `铝每升高一摄氏度就伸长约百万分之二十三；摊在两米长的臂上，这不是能四舍五入掉的小数。` },
+    { en: `Weight comes second. Any {{stiffness}} short of infinite brings {{deflection}}, and a heavy tool makes the arm sag.`,
+      zh: `第二个问题是重量。只要{{刚度}}不到无穷，就必然有{{形变}}；挂上重刀，臂就往下沉。` },
+    { en: `Gearboxes add softness of their own: a {{backlash}} of a few arc minutes is visible at the tip of a long arm.`,
+      zh: `减速机又添一层软：关节里几分钟弧的{{背隙}}，到长臂末端就成了看得见的偏差。` },
+    { en: `Then there is the part. A {{fixture}} holds it, and no fixture is perfect.`,
+      zh: `接着是工件本身。它由{{夹具}}固定，而夹具没有一件是完美的。` },
+    { en: `The plate sits half a millimetre from where the drawing says, and the robot faithfully goes to the wrong place.`,
+      zh: `这块板停的位置比图纸偏了半毫米，机器人于是忠实地走到了错的地方。` },
+    { en: `One answer is to let the robot look: a wrist camera finds the part, and software computes the {{transform}} between eye and tool.`,
+      zh: `一种办法是让机器人自己看：腕上的相机找到工件，软件再算出相机与刀具之间的{{变换}}关系。` },
+    { en: `Errors grow inside that transform. A tenth of a degree at half a metre throws the aim off by nearly a millimetre.`,
+      zh: `误差正是在这个变换里被放大的。角度差十分之一度，在半米处瞄准点就偏出近一毫米。` },
+    { note: {
+        en: 'A camera does not remove error. It moves the error to a place where you can see it.',
+        zh: '相机并不消除误差，只是把误差挪到一个你看得见的地方。'
+      } },
+    { en: `The stronger answer is to stop trusting one calculation: the arm moves, looks, corrects, and looks again.`,
+      zh: `更硬的办法是干脆不信一次算完的结果：臂走一步、看一眼、修正一下，再看一眼。` },
+    { en: `That is what a {{servo}} does, with a camera or a force sensor as its guide.`,
+      zh: `这就是{{伺服}}在做的事，无论引路的是相机还是力传感器。` },
+    { en: `Contact often beats sight: to seat a peg in a hole with a tenth of a millimetre of clearance, the wrist feels and slides until it drops in.`,
+      zh: `触觉常常胜过视觉：销子要插进间隙只有十分之一毫米的孔，腕子便去感觉、去滑，直到它自己落进去。` },
+    { en: `This is why the old method survives. An operator drags the arm to the right pose and records the angles, so that path is right by construction.`,
+      zh: `老办法因此仍然活着：操作员抓住臂拖到正确位姿，记下这组关节角，那条路便天生是对的。` },
+    { en: `But it is right only along that path, and only for that part.`,
+      zh: `可它只在那条路上对，也只对那一个工件对。` },
+    { en: `Modern production wants the opposite: new geometry every week, batches of forty, no time to teach each one.`,
+      zh: `现代生产要的恰好相反：每周换几何形状，一批只做四十件，没时间一件件去教。` },
+    { en: `So absolute accuracy earns its price, because a robot that knows where it is can be programmed before the part exists.`,
+      zh: `绝对精度因此值那个价钱——一条知道自己身在何处的臂，可以在工件还不存在时就编好程序。` },
+    { en: `The datasheet number is therefore not a property of the arm alone, but of arm, tool, fixture, temperature and calibration, measured on one day.`,
+      zh: `所以样本上那个数字并非臂一家的属性，而是臂、刀具、夹具、温度与标定，在某一天共同量出来的结果。` }
+  ],
+  words: {
+    'repeatability': { ipa: '/rɪˌpiːtəˈbɪləti/', cn: 'n. 重复精度；可重复性（多次回到同一点的一致程度）', ex: 'Repeatability is quoted as a plus-or-minus band around a taught point.', exZh: '重复精度的标法，是示教点周围的一个正负区间。' },
+    'accuracy': { ipa: '/ˈækjərəsi/', cn: 'n. 准确度；绝对精度（到达点与目标点的真实距离）', ex: 'Accuracy is measured with a ruler outside the robot, not against its own memory.', exZh: '准确度要用机器人之外的尺子来量，而不是它自己的记忆。' },
+    'tolerance': { ipa: '/ˈtɒlərəns/', cn: 'n. 公差；容许偏差（加工允许的误差范围）', ex: 'A generous tolerance makes a part cheap and a robot model wrong.', exZh: '公差放得宽，零件便宜，机器人模型却会失准。' },
+    'calibrate': { ipa: '/ˈkælɪbreɪt/', cn: 'v. 标定；校准（用已知基准修正仪器或模型）', ex: 'They calibrate the arm every spring, after a cold winter in the workshop.', exZh: '车间冷了一整个冬天，开春他们就要重新标定这条臂。' },
+    'drift': { ipa: '/drɪft/', cn: 'v./n. 漂移；缓慢偏移（不知不觉地逐渐变化）', ex: 'The zero point drifts as the motor windings heat up.', exZh: '电机绕组一热，零点就慢慢漂移。' },
+    'stiffness': { ipa: '/ˈstɪfnəs/', cn: 'n. 刚度（抵抗受力变形的能力）', ex: 'Stiffness falls sharply when the arm is fully extended.', exZh: '臂完全伸展时，刚度会明显下降。' },
+    'deflection': { ipa: '/dɪˈflekʃn/', cn: 'n. 挠度；形变（受载后的弯曲量）', ex: 'A ten-kilogram tool adds visible deflection at the wrist.', exZh: '挂上十公斤的刀具，腕部会出现肉眼可见的形变。' },
+    'backlash': { ipa: '/ˈbæklæʃ/', cn: 'n. 背隙；齿隙（传动件换向时的空程）', ex: 'Backlash shows up as a small dead zone whenever the joint reverses.', exZh: '关节一换向，背隙就表现为一小段空程。' },
+    'fixture': { ipa: '/ˈfɪkstʃə(r)/', cn: 'n. 夹具；固定装置', ex: 'The fixture decides where the part really is, whatever the drawing claims.', exZh: '工件究竟在哪里由夹具决定，图纸说什么不算。' },
+    'transform': { ipa: '/trænsˈfɔːm/', cn: 'n.（坐标）变换 v. 转变', ex: 'The software applies one transform to turn pixels into millimetres.', exZh: '软件用一个变换把像素换算成毫米。' },
+    'servo': { ipa: '/ˈsɜːvəʊ/', cn: 'n. 伺服机构（按反馈不断修正动作的驱动装置）', ex: 'A servo compares where it is with where it should be, thousands of times a second.', exZh: '伺服机构每秒上千次比较自己在哪里与该在哪里。' }
+  },
+  quiz: [
+    { q: 'How does the passage distinguish repeatability from accuracy?',
+      options: ['Repeatability is a promise about the machine itself; accuracy is a promise about the outside world.',
+                'Repeatability matters for welding, while accuracy matters only for assembly.',
+                'Accuracy is built into the hardware, while repeatability must be measured every day.'],
+      answer: 0,
+      why: '第三、四句给出定义：重复精度是机器对自己许的诺言（再做一遍同一动作），绝对精度是对世界许的诺言（到达的就是你指定的点）。' },
+    { q: 'Why does a small angular error in the camera matter so much?',
+      options: ['Because a camera cannot measure distance at all.',
+                'Because the error is multiplied by the working distance, so a tenth of a degree becomes nearly a millimetre at half a metre.',
+                'Because the controller rounds every angle to one decimal place.'],
+      answer: 1,
+      why: '角度误差会随距离放大：十分之一度在半米处就换来近一毫米的偏移，这正是"变换关系会放大小误差"的意思。' },
+    { q: 'Why does small-batch, fast-changing production make absolute accuracy worth its cost?',
+      options: ['Because such parts can only be welded by hand.',
+                'Because recording joint angles is no longer allowed in modern factories.',
+                'Because a robot that knows where it is can be programmed offline instead of teaching every new part by hand.'],
+      answer: 2,
+      why: '示教记录只对那一条路径、那一个工件有效；换型频繁时没时间逐件示教，只有具备绝对精度才能在软件里离线编程。' }
+  ]
+},
 
 /* ---------------------------------------------------------------------------
    2026-11-12 · 科技硬件 / 固态电池：液体换成固体，难在界面与产线
