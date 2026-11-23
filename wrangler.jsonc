@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers 静态资源部署配置
+  // 站点是单个 index.html，直接把仓库根目录当作静态资源目录
+  // 不需要 main 入口脚本，这是「纯静态资源 Worker」的写法
+  "name": "daily-read",
+  "compatibility_date": "2026-11-23",
+  "assets": {
+    "directory": "."
+  }
+}

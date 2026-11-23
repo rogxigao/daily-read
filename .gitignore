@@ -2,6 +2,8 @@
 # .workbuddy 里是项目记忆，outputs 里是英语作业，都不该上传到公开仓库
 *
 !.gitignore
+!.assetsignore
 !index.html
 !og.png
 !icon.png
+!wrangler.jsonc

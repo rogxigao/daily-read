@@ -1,0 +1,10 @@
+# Workers 静态资源上传时排除这些，别把仓库历史和本地目录传到 CDN 上
+.git
+.wrangler
+node_modules
+scripts
+.workbuddy
+outputs
+.gitignore
+wrangler.jsonc
+*.genie
