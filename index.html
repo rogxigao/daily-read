@@ -1323,10 +1323,10 @@ const ARTICLES = [
   },
   quiz: [
     { q: 'Why must the linker stay stable in the blood yet break inside the cell?',
-      options: ['Because the payload is harmless until it is chemically released from the antibody.',
-                'Because a bond that breaks early would release the poison throughout the body instead of at the tumour.',
-                'Because the antibody cannot bind its target while the linker is still intact.'],
-      answer: 1,
+      options: ['Because the antibody cannot bind its target while the linker is still intact.',
+                'Because the payload is harmless until it is chemically released from the antibody.',
+                'Because a bond that breaks early would release the poison throughout the body instead of at the tumour.'],
+      answer: 2,
       why: '连接子的两难在于：血液中提前断裂，毒药就会全身释放，靶向性彻底丧失；而它进入溶酶体后又必须断开，载荷才被放出来。所以要求是"血中稳定、胞内断裂"，而不是载荷本身无害。' },
     { q: 'What is the bystander effect described in the passage?',
       options: ['Healthy cells near the tumour being killed because they display the same target protein.',
@@ -1335,10 +1335,10 @@ const ARTICLES = [
       answer: 1,
       why: '文中说可透膜的载荷能从被靶向的细胞漏出，杀死抗体从未接触过的邻居，这才叫旁观者效应。它的好处是应对靶点表达不均的肿瘤，代价是可能误伤邻近健康组织。' },
     { q: 'Why does the passage say development is slow and expensive?',
-      options: ['Because every candidate must be tested against all known cancer types.',
-                'Because several independent failure modes, such as target loss, efflux and cytokine release, have to be measured one by one.',
+      options: ['Because several independent failure modes, such as target loss, efflux and cytokine release, have to be measured one by one.',
+                'Because every candidate must be tested against all known cancer types.',
                 'Because the payloads are too toxic to be manufactured in large quantities.'],
-      answer: 1,
+      answer: 0,
       why: '文中列举了靶点不再展示、外排泵把药泵出、DNA 损伤被快速修复、抗体恒定区引发细胞因子风暴等多条独立失效路径，每一种都得单独测量，因此周期长、投入巨大。' }
   ]
 },
